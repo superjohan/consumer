@@ -171,6 +171,18 @@
 	self.synthController.note = 0;
 }
 
+#pragma mark - IBActions
+
+- (IBAction)updatedWaveform:(id)sender
+{
+	if ([sender isKindOfClass:[UISegmentedControl class]])
+	{
+		UISegmentedControl *segControl = (UISegmentedControl *)sender;
+		NSInteger value = segControl.selectedSegmentIndex;
+		self.synthController.waveform = value;
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad

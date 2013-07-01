@@ -19,7 +19,7 @@ ConsumerADSREnvelope;
 
 typedef NS_ENUM(NSInteger, ConsumerSynthWaveform)
 {
-	ConsumerSynthWaveformSine,
+	ConsumerSynthWaveformSine = 0,
 	ConsumerSynthWaveformSquare,
 	ConsumerSynthWaveformTriangle,
 	ConsumerSynthWaveformSaw,

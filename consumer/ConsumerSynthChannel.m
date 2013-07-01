@@ -33,10 +33,15 @@ float noteFrequency(NSInteger note)
 	return powf(2.0, ((note - 49.0) / 12.0)) * 440.0;
 }
 
+void fixPhase(float *input_p)
+{
+	float fit = floorf((*input_p - fmodf(*input_p, M_PI * 2.0)) / (M_PI * 2.0));
+	*input_p = *input_p - (fit * (M_PI * 2.0));
+}
+
 float square(float input, float offset)
 {
-	float fit = floorf((input - fmodf(input, M_PI * 2.0)) / (M_PI * 2.0));
-	input = input - (fit * (M_PI * 2.0));
+	fixPhase(&input);
 
 	if (offset < 0)
 	{
@@ -59,12 +64,26 @@ float square(float input, float offset)
 
 float triangle(float input)
 {
-	return 0;
+	fixPhase(&input);
+	
+	if (input < M_PI)
+	{
+		float value = (input * 2.0) / M_PI;
+		return value - 1.0;
+	}
+	else
+	{
+		float value = ((input - M_PI) * 2.0) / M_PI;
+		return 1.0 - value;
+	}
 }
 
 float saw(float input)
 {
-	return 0;
+	fixPhase(&input);
+	
+	float value = (input * 2.0) / (M_PI * 2.0);
+	return value - 1.0;
 }
 
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)

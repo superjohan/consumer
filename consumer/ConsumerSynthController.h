@@ -7,9 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ConsumerSynthChannel.h"
 
 @interface ConsumerSynthController : NSObject
 
 @property (nonatomic, assign) NSInteger note;
+@property (nonatomic, assign) ConsumerSynthWaveform waveform;
 
 @end

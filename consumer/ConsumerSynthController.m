@@ -44,4 +44,9 @@
 	self.synthChannel->currentNote = note;
 }
 
+- (void)setWaveform:(ConsumerSynthWaveform)waveform
+{
+	self.synthChannel->oscillator1Waveform = waveform;
+}
+
 @end
