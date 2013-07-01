@@ -8,11 +8,30 @@
 
 #import <Foundation/Foundation.h>
 
+typedef struct
+{
+	float attack;
+	float decay;
+	float sustain;
+	float release;
+}
+ConsumerADSREnvelope;
+
+typedef NS_ENUM(NSInteger, ConsumerSynthWaveform)
+{
+	ConsumerSynthWaveformSine,
+	ConsumerSynthWaveformSquare,
+	ConsumerSynthWaveformTriangle,
+	ConsumerSynthWaveformSaw,
+};
+
 @interface ConsumerSynthChannel : NSObject
 {
 	@public
 	float sampleRate;
 	NSInteger currentNote;
+	ConsumerADSREnvelope amplitudeEnvelope;
+	ConsumerSynthWaveform oscillator1Waveform;
 }
 
 @end
