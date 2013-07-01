@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		294987A3CF704565A6E159A3 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A05886A4286947D89113D076 /* libPods.a */; };
 		903EBBB917818EB600D43246 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 903EBBB817818EB600D43246 /* UIKit.framework */; };
 		903EBBBB17818EB600D43246 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 903EBBBA17818EB600D43246 /* Foundation.framework */; };
 		903EBBBD17818EB600D43246 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 903EBBBC17818EB600D43246 /* CoreGraphics.framework */; };
@@ -18,9 +19,13 @@
 		903EBBCF17818EB600D43246 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 903EBBCE17818EB600D43246 /* Default-568h@2x.png */; };
 		903EBBD217818EB600D43246 /* ConsumerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 903EBBD117818EB600D43246 /* ConsumerViewController.m */; };
 		903EBBD517818EB600D43246 /* ConsumerViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 903EBBD317818EB600D43246 /* ConsumerViewController.xib */; };
+		905F86851781A31400516DE3 /* ConsumerSynthController.m in Sources */ = {isa = PBXBuildFile; fileRef = 905F86841781A31400516DE3 /* ConsumerSynthController.m */; };
+		905F86881781A39800516DE3 /* ConsumerSynthChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 905F86871781A39800516DE3 /* ConsumerSynthChannel.m */; };
+		905F868B1781A3D900516DE3 /* ConsumerHelperFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 905F868A1781A3D900516DE3 /* ConsumerHelperFunctions.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0BA55AD53F3E434DB2C07CAE /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = SOURCE_ROOT; };
 		903EBBB517818EB600D43246 /* consumer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = consumer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		903EBBB817818EB600D43246 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		903EBBBA17818EB600D43246 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -37,6 +42,13 @@
 		903EBBD017818EB600D43246 /* ConsumerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ConsumerViewController.h; sourceTree = "<group>"; };
 		903EBBD117818EB600D43246 /* ConsumerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ConsumerViewController.m; sourceTree = "<group>"; };
 		903EBBD417818EB600D43246 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/ConsumerViewController.xib; sourceTree = "<group>"; };
+		905F86831781A31400516DE3 /* ConsumerSynthController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsumerSynthController.h; sourceTree = "<group>"; };
+		905F86841781A31400516DE3 /* ConsumerSynthController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConsumerSynthController.m; sourceTree = "<group>"; };
+		905F86861781A39800516DE3 /* ConsumerSynthChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsumerSynthChannel.h; sourceTree = "<group>"; };
+		905F86871781A39800516DE3 /* ConsumerSynthChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConsumerSynthChannel.m; sourceTree = "<group>"; };
+		905F86891781A3D900516DE3 /* ConsumerHelperFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsumerHelperFunctions.h; sourceTree = "<group>"; };
+		905F868A1781A3D900516DE3 /* ConsumerHelperFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConsumerHelperFunctions.m; sourceTree = "<group>"; };
+		A05886A4286947D89113D076 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +59,7 @@
 				903EBBB917818EB600D43246 /* UIKit.framework in Frameworks */,
 				903EBBBB17818EB600D43246 /* Foundation.framework in Frameworks */,
 				903EBBBD17818EB600D43246 /* CoreGraphics.framework in Frameworks */,
+				294987A3CF704565A6E159A3 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +72,7 @@
 				903EBBBE17818EB600D43246 /* consumer */,
 				903EBBB717818EB600D43246 /* Frameworks */,
 				903EBBB617818EB600D43246 /* Products */,
+				0BA55AD53F3E434DB2C07CAE /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -76,6 +90,7 @@
 				903EBBB817818EB600D43246 /* UIKit.framework */,
 				903EBBBA17818EB600D43246 /* Foundation.framework */,
 				903EBBBC17818EB600D43246 /* CoreGraphics.framework */,
+				A05886A4286947D89113D076 /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -83,6 +98,12 @@
 		903EBBBE17818EB600D43246 /* consumer */ = {
 			isa = PBXGroup;
 			children = (
+				905F86891781A3D900516DE3 /* ConsumerHelperFunctions.h */,
+				905F868A1781A3D900516DE3 /* ConsumerHelperFunctions.m */,
+				905F86861781A39800516DE3 /* ConsumerSynthChannel.h */,
+				905F86871781A39800516DE3 /* ConsumerSynthChannel.m */,
+				905F86831781A31400516DE3 /* ConsumerSynthController.h */,
+				905F86841781A31400516DE3 /* ConsumerSynthController.m */,
 				903EBBC717818EB600D43246 /* ConsumerAppDelegate.h */,
 				903EBBC817818EB600D43246 /* ConsumerAppDelegate.m */,
 				903EBBD017818EB600D43246 /* ConsumerViewController.h */,
@@ -114,9 +135,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 903EBBD817818EB600D43246 /* Build configuration list for PBXNativeTarget "consumer" */;
 			buildPhases = (
+				03A8819BDE3E44498AED3B8D /* Check Pods Manifest.lock */,
 				903EBBB117818EB600D43246 /* Sources */,
 				903EBBB217818EB600D43246 /* Frameworks */,
 				903EBBB317818EB600D43246 /* Resources */,
+				A50DBB7EE833425B93A32694 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -169,14 +192,48 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		03A8819BDE3E44498AED3B8D /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+		};
+		A50DBB7EE833425B93A32694 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		903EBBB117818EB600D43246 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				905F868B1781A3D900516DE3 /* ConsumerHelperFunctions.m in Sources */,
 				903EBBC517818EB600D43246 /* main.m in Sources */,
 				903EBBC917818EB600D43246 /* ConsumerAppDelegate.m in Sources */,
+				905F86851781A31400516DE3 /* ConsumerSynthController.m in Sources */,
 				903EBBD217818EB600D43246 /* ConsumerViewController.m in Sources */,
+				905F86881781A39800516DE3 /* ConsumerSynthChannel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,6 +317,7 @@
 		};
 		903EBBD917818EB600D43246 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BA55AD53F3E434DB2C07CAE /* Pods.xcconfig */;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "consumer/consumer-Prefix.pch";
@@ -271,6 +329,7 @@
 		};
 		903EBBDA17818EB600D43246 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0BA55AD53F3E434DB2C07CAE /* Pods.xcconfig */;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "consumer/consumer-Prefix.pch";
@@ -299,6 +358,7 @@
 				903EBBDA17818EB600D43246 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
