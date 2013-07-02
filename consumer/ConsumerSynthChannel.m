@@ -99,13 +99,13 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		
 		if (this->note > 0)
 		{
+			float amplitude = 0;
+			
 			if (this->notePosition == 0)
 			{
 				this->amplitudeEnvelopeState = ConsumerEnvelopeStateAttack;
 				this->envelopePosition = 0;
 			}
-			
-			float amplitude = 0;
 			
 			if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateAttack)
 			{
@@ -231,6 +231,11 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 {
 	@synchronized(self)
 	{
+		if (_currentNote <= 0)
+		{
+			notePosition = 0; // FIXME for glide?
+		}
+		
 		_currentNote = currentNote;
 		
 		if (_currentNote != ConsumerNoteOff)
