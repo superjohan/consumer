@@ -43,20 +43,20 @@ void fixPhase(float *input_p)
 	*input_p = *input_p - (fit * (M_PI * 2.0));
 }
 
-float square(float input, float offset)
+float square(float input, float width)
 {
 	fixPhase(&input);
 
-	if (offset < 0)
+	if (width < 0)
 	{
-		offset = 0;
+		width = 0;
 	}
-	else if (offset > 1.0)
+	else if (width > 1.0)
 	{
-		offset = 1.0;
+		width = 1.0;
 	}
 	
-	if (input < ((M_PI * 2.0) * offset))
+	if (input < ((M_PI * 2.0) * width))
 	{
 		return -1.0;
 	}
