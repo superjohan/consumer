@@ -41,12 +41,56 @@
 
 - (void)setNote:(NSInteger)note
 {
-	self.synthChannel->currentNote = note;
+	self.synthChannel.currentNote = note;
 }
 
 - (void)setWaveform:(ConsumerSynthWaveform)waveform
 {
 	self.synthChannel->oscillator1Waveform = waveform;
+}
+
+- (void)setAmplitudeAttack:(float)amplitudeAttack
+{
+	if (amplitudeAttack < 0 || amplitudeAttack > 1.0)
+	{
+		return;
+	}
+	
+	_amplitudeAttack = amplitudeAttack;
+	self.synthChannel->amplitudeEnvelope.attack = amplitudeAttack;
+}
+
+- (void)setAmplitudeDecay:(float)amplitudeDecay
+{
+	if (amplitudeDecay < 0 || amplitudeDecay > 1.0)
+	{
+		return;
+	}
+	
+	_amplitudeDecay = amplitudeDecay;
+	self.synthChannel->amplitudeEnvelope.decay = amplitudeDecay;
+}
+
+- (void)setAmplitudeSustain:(float)amplitudeSustain
+{
+	if (amplitudeSustain < 0 || amplitudeSustain > 1.0)
+	{
+		return;
+	}
+	
+	_amplitudeSustain = amplitudeSustain;
+	self.synthChannel->amplitudeEnvelope.sustain = amplitudeSustain;
+}
+
+- (void)setAmplitudeRelease:(float)amplitudeRelease
+{
+	if (amplitudeRelease < 0 || amplitudeRelease > 1.0)
+	{
+		return;
+	}
+	
+	_amplitudeRelease = amplitudeRelease;
+	self.synthChannel->amplitudeEnvelope.release = amplitudeRelease;
 }
 
 @end

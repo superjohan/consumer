@@ -25,8 +25,12 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 @implementation ConsumerSynthChannel
 {
 	NSInteger notePosition;
+	NSInteger envelopePosition;
+	NSInteger note;
 	ConsumerEnvelopeState amplitudeEnvelopeState;
 }
+
+const NSInteger ConsumerMaxStateLength = 44100;
 
 float noteFrequency(NSInteger note)
 {
@@ -93,9 +97,73 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		float l = 0;
 		float r = 0;
 		
-		if (this->currentNote > 0)
+		if (this->note > 0)
 		{
-			NSInteger note = this->currentNote;
+			if (this->notePosition == 0)
+			{
+				this->amplitudeEnvelopeState = ConsumerEnvelopeStateAttack;
+				this->envelopePosition = 0;
+			}
+			
+			float amplitude = 0;
+			
+			if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateAttack)
+			{
+				float attackLength = this->amplitudeEnvelope.attack * ConsumerMaxStateLength;
+				
+				if (this->envelopePosition < attackLength)
+				{
+					amplitude = this->notePosition / attackLength;
+					this->envelopePosition++;
+				}
+				else
+				{
+					this->amplitudeEnvelopeState = ConsumerEnvelopeStateDecay;
+					this->envelopePosition = 0;
+				}
+			}
+			else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateDecay)
+			{
+				float decayLength = this->amplitudeEnvelope.decay * ConsumerMaxStateLength;
+				
+				if (this->envelopePosition < decayLength)
+				{
+					amplitude = 1.0 - ((this->envelopePosition / decayLength) * (1.0 - this->amplitudeEnvelope.sustain));
+					this->envelopePosition++;
+				}
+				else
+				{
+					this->amplitudeEnvelopeState = ConsumerEnvelopeStateSustain;
+				}
+			}
+			else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateSustain)
+			{
+				amplitude = this->amplitudeEnvelope.sustain;
+				
+				if (this->_currentNote == ConsumerNoteOff)
+				{
+					this->amplitudeEnvelopeState = ConsumerEnvelopeStateRelease;
+					this->envelopePosition = 0;
+				}
+			}
+			else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateRelease)
+			{
+				float releaseLength = this->amplitudeEnvelope.release * ConsumerMaxStateLength;
+				
+				if (this->envelopePosition < releaseLength)
+				{
+					amplitude = this->amplitudeEnvelope.sustain - ((this->envelopePosition / releaseLength) * this->amplitudeEnvelope.sustain);
+					this->envelopePosition++;
+				}
+				else
+				{
+					this->amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
+					this->_currentNote = 0;
+					this->note = 0;
+				}
+			}
+			
+			NSInteger note = this->note;
 			float value = 0;
 			if (note > 0)
 			{
@@ -119,7 +187,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 					value = saw(phase);
 				}
 				
-				l = value;
+				l = value * amplitude;
 				r = l;
 				
 				this->notePosition++;
@@ -128,6 +196,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		else
 		{
 			this->notePosition = 0;
+			this->amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
 		}
 		
 		clampStereo(&l, &r, 1.0);
@@ -148,12 +217,27 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 {
 	if ((self = [super init]))
 	{
-		currentNote = 0;
+		_currentNote = 0;
+		note = 0;
 		notePosition = 0;
 		oscillator1Waveform = ConsumerSynthWaveformSine;
+		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
 	}
 	
 	return self;
+}
+
+- (void)setCurrentNote:(NSInteger)currentNote
+{
+	@synchronized(self)
+	{
+		_currentNote = currentNote;
+		
+		if (_currentNote != ConsumerNoteOff)
+		{
+			note = _currentNote;
+		}
+	}
 }
 
 @end

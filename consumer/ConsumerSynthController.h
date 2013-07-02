@@ -13,5 +13,9 @@
 
 @property (nonatomic, assign) NSInteger note;
 @property (nonatomic, assign) ConsumerSynthWaveform waveform;
+@property (nonatomic, assign) float amplitudeAttack;
+@property (nonatomic, assign) float amplitudeDecay;
+@property (nonatomic, assign) float amplitudeSustain;
+@property (nonatomic, assign) float amplitudeRelease;
 
 @end

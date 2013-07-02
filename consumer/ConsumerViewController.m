@@ -8,6 +8,7 @@
 
 #import "ConsumerViewController.h"
 #import "ConsumerSynthController.h"
+#import "ConsumerSynthChannel.h"
 
 @class ConsumerKeyboardView;
 
@@ -168,7 +169,7 @@
 - (void)consumerKeyboardEndedTouch:(ConsumerKeyboardView *)keyboard
 {
 	self.activeNote = 0;
-	self.synthController.note = 0;
+	self.synthController.note = -1;
 }
 
 #pragma mark - IBActions
@@ -180,6 +181,42 @@
 		UISegmentedControl *segControl = (UISegmentedControl *)sender;
 		NSInteger value = segControl.selectedSegmentIndex;
 		self.synthController.waveform = value;
+	}
+}
+
+- (IBAction)amplitudeAttackSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.amplitudeAttack = slider.value / 100.0;
+	}
+}
+
+- (IBAction)amplitudeDecaySliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.amplitudeDecay = slider.value / 100.0;
+	}
+}
+
+- (IBAction)amplitudeSustainSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.amplitudeSustain = slider.value / 100.0;
+	}
+}
+
+- (IBAction)amplitudeReleaseSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.amplitudeRelease = slider.value / 100.0;
 	}
 }
 

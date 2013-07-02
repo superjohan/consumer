@@ -25,13 +25,16 @@ typedef NS_ENUM(NSInteger, ConsumerSynthWaveform)
 	ConsumerSynthWaveformSaw,
 };
 
+const NSInteger ConsumerNoteOff = -1;
+
 @interface ConsumerSynthChannel : NSObject
 {
 	@public
 	float sampleRate;
-	NSInteger currentNote;
 	ConsumerADSREnvelope amplitudeEnvelope;
 	ConsumerSynthWaveform oscillator1Waveform;
 }
+
+@property (nonatomic, assign) NSInteger currentNote;
 
 @end
