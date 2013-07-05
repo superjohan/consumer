@@ -29,7 +29,6 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	ConsumerEnvelopeState _amplitudeEnvelopeState;
 	float _sampleRate;
 	float _noteTime;
-	float _glide;
 	float _startFrequency;
 	float _currentFrequency;
 	float _targetFrequency;
@@ -184,7 +183,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 				
 				if ( ! floatsAreEqual(this->_currentFrequency, this->_targetFrequency))
 				{
-					float glide = this->_glide;					
+					float glide = this->glide;					
 					if (glide > 0)
 					{
 						float diff = this->_targetFrequency - this->_startFrequency;
@@ -259,11 +258,11 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 	{
 		oscillator1Waveform = ConsumerSynthWaveformSine;
 		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
+		glide = 0;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;
 		_noteTime = 0;
-		_glide = 0;
 	}
 	
 	return self;

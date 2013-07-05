@@ -220,6 +220,15 @@
 	}
 }
 
+- (IBAction)glideSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.glide = slider.value / 100.0;
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad

@@ -32,6 +32,7 @@ const NSInteger ConsumerNoteOff = -1;
 	@public
 	ConsumerADSREnvelope amplitudeEnvelope;
 	ConsumerSynthWaveform oscillator1Waveform;
+	float glide;
 }
 
 @property (nonatomic, assign) NSInteger currentNote;

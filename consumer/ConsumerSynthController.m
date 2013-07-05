@@ -90,4 +90,15 @@
 	self.synthChannel->amplitudeEnvelope.release = amplitudeRelease;
 }
 
+- (void)setGlide:(float)glide
+{
+	if (glide < 0 || glide > 1.0)
+	{
+		return;
+	}
+	
+	_glide = glide;
+	self.synthChannel->glide = glide;
+}
+
 @end

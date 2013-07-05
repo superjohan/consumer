@@ -17,5 +17,6 @@
 @property (nonatomic, assign) float amplitudeDecay;
 @property (nonatomic, assign) float amplitudeSustain;
 @property (nonatomic, assign) float amplitudeRelease;
+@property (nonatomic, assign) float glide;
 
 @end
