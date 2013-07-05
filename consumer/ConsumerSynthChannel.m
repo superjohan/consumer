@@ -90,6 +90,75 @@ float saw(float input)
 	return value - 1.0;
 }
 
+float applyVolumeEnvelope(ConsumerSynthChannel *this)
+{
+	float amplitude = 0;
+	
+	if (this->notePosition == 0)
+	{
+		this->amplitudeEnvelopeState = ConsumerEnvelopeStateAttack;
+		this->envelopePosition = 0;
+	}
+
+	if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateAttack)
+	{
+		float attackLength = this->amplitudeEnvelope.attack * ConsumerMaxStateLength;
+
+		if (this->envelopePosition < attackLength)
+		{
+			amplitude = this->notePosition / attackLength;
+			this->envelopePosition++;
+		}
+		else
+		{
+			this->amplitudeEnvelopeState = ConsumerEnvelopeStateDecay;
+			this->envelopePosition = 0;
+		}
+	}
+	else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateDecay)
+	{
+		float decayLength = this->amplitudeEnvelope.decay * ConsumerMaxStateLength;
+
+		if (this->envelopePosition < decayLength)
+		{
+			amplitude = 1.0 - ((this->envelopePosition / decayLength) * (1.0 - this->amplitudeEnvelope.sustain));
+			this->envelopePosition++;
+		}
+		else
+		{
+			this->amplitudeEnvelopeState = ConsumerEnvelopeStateSustain;
+		}
+	}
+	else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateSustain)
+	{
+		amplitude = this->amplitudeEnvelope.sustain;
+
+		if (this->_currentNote == ConsumerNoteOff)
+		{
+			this->amplitudeEnvelopeState = ConsumerEnvelopeStateRelease;
+			this->envelopePosition = 0;
+		}
+	}
+	else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateRelease)
+	{
+		float releaseLength = this->amplitudeEnvelope.release * ConsumerMaxStateLength;
+
+		if (this->envelopePosition < releaseLength)
+		{
+			amplitude = this->amplitudeEnvelope.sustain - ((this->envelopePosition / releaseLength) * this->amplitudeEnvelope.sustain);
+			this->envelopePosition++;
+		}
+		else
+		{
+			this->amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
+			this->_currentNote = 0;
+			this->note = 0;
+		}
+	}
+	
+	return amplitude;
+}
+
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	for (NSInteger i = 0; i < frames; i++)
@@ -99,70 +168,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		
 		if (this->note > 0)
 		{
-			float amplitude = 0;
-			
-			if (this->notePosition == 0)
-			{
-				this->amplitudeEnvelopeState = ConsumerEnvelopeStateAttack;
-				this->envelopePosition = 0;
-			}
-			
-			if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateAttack)
-			{
-				float attackLength = this->amplitudeEnvelope.attack * ConsumerMaxStateLength;
-				
-				if (this->envelopePosition < attackLength)
-				{
-					amplitude = this->notePosition / attackLength;
-					this->envelopePosition++;
-				}
-				else
-				{
-					this->amplitudeEnvelopeState = ConsumerEnvelopeStateDecay;
-					this->envelopePosition = 0;
-				}
-			}
-			else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateDecay)
-			{
-				float decayLength = this->amplitudeEnvelope.decay * ConsumerMaxStateLength;
-				
-				if (this->envelopePosition < decayLength)
-				{
-					amplitude = 1.0 - ((this->envelopePosition / decayLength) * (1.0 - this->amplitudeEnvelope.sustain));
-					this->envelopePosition++;
-				}
-				else
-				{
-					this->amplitudeEnvelopeState = ConsumerEnvelopeStateSustain;
-				}
-			}
-			else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateSustain)
-			{
-				amplitude = this->amplitudeEnvelope.sustain;
-				
-				if (this->_currentNote == ConsumerNoteOff)
-				{
-					this->amplitudeEnvelopeState = ConsumerEnvelopeStateRelease;
-					this->envelopePosition = 0;
-				}
-			}
-			else if (this->amplitudeEnvelopeState == ConsumerEnvelopeStateRelease)
-			{
-				float releaseLength = this->amplitudeEnvelope.release * ConsumerMaxStateLength;
-				
-				if (this->envelopePosition < releaseLength)
-				{
-					amplitude = this->amplitudeEnvelope.sustain - ((this->envelopePosition / releaseLength) * this->amplitudeEnvelope.sustain);
-					this->envelopePosition++;
-				}
-				else
-				{
-					this->amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
-					this->_currentNote = 0;
-					this->note = 0;
-				}
-			}
-			
+			float amplitude = applyVolumeEnvelope(this);
+
 			NSInteger note = this->note;
 			float value = 0;
 			if (note > 0)
