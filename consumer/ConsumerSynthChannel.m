@@ -42,16 +42,8 @@ float noteFrequency(NSInteger note)
 	return powf(2.0, ((note - 49.0) / 12.0)) * 440.0;
 }
 
-void fixPhase(float *input_p)
-{
-	float fit = floorf((*input_p - fmodf(*input_p, M_PI * 2.0)) / (M_PI * 2.0));
-	*input_p = *input_p - (fit * (M_PI * 2.0));
-}
-
 float square(float input, float width)
 {
-	fixPhase(&input);
-
 	if (width < 0)
 	{
 		width = 0;
@@ -73,8 +65,6 @@ float square(float input, float width)
 
 float triangle(float input)
 {
-	fixPhase(&input);
-	
 	if (input < M_PI)
 	{
 		float value = (input * 2.0) / M_PI;
@@ -89,8 +79,6 @@ float triangle(float input)
 
 float saw(float input)
 {
-	fixPhase(&input);
-	
 	float value = (input * 2.0) / (M_PI * 2.0);
 	return value - 1.0;
 }
@@ -206,23 +194,24 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 					frequency = noteFrequency(note);
 				}
 				
-				this->_angle = fmodf((this->_angle + ((M_PI * 2.0) * frequency / this->_sampleRate)), M_PI * 2.0); // FIXME: clean this up
+				float angle = this->_angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
+				angle = fmodf(angle, M_PI * 2.0);
 				
 				if (this->oscillator1Waveform == ConsumerSynthWaveformSine)
 				{
-					value = sinf(this->_angle);
+					value = sinf(angle);
 				}
 				else if (this->oscillator1Waveform == ConsumerSynthWaveformSquare)
 				{
-					value = square(this->_angle, 0.5);
+					value = square(angle, 0.5);
 				}
 				else if (this->oscillator1Waveform == ConsumerSynthWaveformTriangle)
 				{
-					value = triangle(this->_angle);
+					value = triangle(angle);
 				}
 				else if (this->oscillator1Waveform == ConsumerSynthWaveformSaw)
 				{
-					value = saw(this->_angle);
+					value = saw(angle);
 				}
 				
 				l = value * amplitude;
@@ -230,6 +219,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 				
 				this->_currentFrequency = frequency;
 				this->_noteTime += .001; // FIXME
+				this->_angle = angle;
 			}
 		}
 		else
