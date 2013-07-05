@@ -42,6 +42,11 @@ void clampStereo(float *left, float *right, float max)
 	clampChannel(right, max);
 }
 
+BOOL floatsAreEqual(float float1, float float2)
+{
+	return (fabsf(float1 - float2) <= 0.000001);
+}
+
 @implementation ConsumerHelperFunctions
 
 @end

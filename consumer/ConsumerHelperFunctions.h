@@ -10,6 +10,7 @@
 
 float getTickLength(float bpm, float samplingRate);
 void clampStereo(float *left, float *right, float max); // if 'max' is higher than 1.0, it's set to 1.0
+BOOL floatsAreEqual(float float1, float float2);
 
 @interface ConsumerHelperFunctions : NSObject
 

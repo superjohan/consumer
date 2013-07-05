@@ -30,11 +30,12 @@ const NSInteger ConsumerNoteOff = -1;
 @interface ConsumerSynthChannel : NSObject
 {
 	@public
-	float sampleRate;
 	ConsumerADSREnvelope amplitudeEnvelope;
 	ConsumerSynthWaveform oscillator1Waveform;
 }
 
 @property (nonatomic, assign) NSInteger currentNote;
+
+- (instancetype)initWithSampleRate:(float)sampleRate;
 
 @end

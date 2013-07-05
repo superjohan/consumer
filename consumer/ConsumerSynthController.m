@@ -22,10 +22,7 @@
 	if ((self = [super init]))
 	{
 		_audioController = [[AEAudioController alloc] initWithAudioDescription:[AEAudioController nonInterleavedFloatStereoAudioDescription]];
-		
-		_synthChannel = [[ConsumerSynthChannel alloc] init];
-		_synthChannel->sampleRate = _audioController.audioDescription.mSampleRate;
-		
+		_synthChannel = [[ConsumerSynthChannel alloc] initWithSampleRate:_audioController.audioDescription.mSampleRate];
 		[_audioController addChannels:[NSArray arrayWithObject:_synthChannel]];
 
 		NSError *error = nil;
