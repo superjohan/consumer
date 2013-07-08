@@ -229,6 +229,24 @@
 	}
 }
 
+- (IBAction)filterCutoffSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.filterCutoff = slider.value;
+	}
+}
+
+- (IBAction)filterResonanceSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.filterResonance = slider.value;
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad

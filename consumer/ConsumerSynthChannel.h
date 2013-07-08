@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <TheAmazingAudioEngine/TheAmazingAudioEngine.h>
 
 typedef struct
 {
@@ -32,7 +33,10 @@ const NSInteger ConsumerNoteOff = -1;
 	@public
 	ConsumerADSREnvelope amplitudeEnvelope;
 	ConsumerSynthWaveform oscillator1Waveform;
-	float glide;
+	float glide; // range: 0 - 1.0
+	AudioUnit filterUnit;
+	float filterCutoff; // range: 0 - 1.0
+	float filterResonance; // range: -0.5 - 1.0
 }
 
 @property (nonatomic, assign) NSInteger currentNote;

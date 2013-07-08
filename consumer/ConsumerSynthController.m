@@ -25,6 +25,22 @@
 		_synthChannel = [[ConsumerSynthChannel alloc] initWithSampleRate:_audioController.audioDescription.mSampleRate];
 		[_audioController addChannels:[NSArray arrayWithObject:_synthChannel]];
 
+		AudioComponentDescription filterComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_LowPassFilter);
+		NSError *filterError = nil;
+		AEAudioUnitFilter *lowpassFilter = [[AEAudioUnitFilter alloc] initWithComponentDescription:filterComponent audioController:_audioController error:&filterError];
+		if (lowpassFilter == nil)
+		{
+			NSLog(@"Error creating filter: %@", filterError);
+			return nil;
+		}
+	
+		AudioUnitSetParameter(lowpassFilter.audioUnit, kLowPassParam_CutoffFrequency, kAudioUnitScope_Global, 0, _audioController.audioDescription.mSampleRate / 2, 0);
+		AudioUnitSetParameter(lowpassFilter.audioUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, 0.0, 0);
+		
+		[_audioController addFilter:lowpassFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
+		
+		_synthChannel->filterUnit = lowpassFilter.audioUnit;
+		
 		NSError *error = nil;
 		if ( ! [_audioController start:&error])
 		{
@@ -99,6 +115,28 @@
 	
 	_glide = glide;
 	self.synthChannel->glide = glide;
+}
+
+- (void)setFilterCutoff:(float)filterCutoff
+{
+	if (filterCutoff < 0 || filterCutoff > 1.0)
+	{
+		return;
+	}
+	
+	_filterCutoff = filterCutoff;
+	self.synthChannel->filterCutoff = filterCutoff;
+}
+
+- (void)setFilterResonance:(float)filterResonance
+{
+	if (filterResonance < -0.5 || filterResonance > 1.0)
+	{
+		return;
+	}
+	
+	_filterResonance = filterResonance;
+	self.synthChannel->filterResonance = filterResonance;
 }
 
 @end

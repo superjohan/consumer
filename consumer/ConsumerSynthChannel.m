@@ -8,7 +8,6 @@
 
 #import "ConsumerSynthChannel.h"
 #import "ConsumerHelperFunctions.h"
-#import <TheAmazingAudioEngine/TheAmazingAudioEngine.h>
 
 typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 {
@@ -240,6 +239,9 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		((float *)audio->mBuffers[0].mData)[i] = l;
 		((float *)audio->mBuffers[1].mData)[i] = r;
 	}
+	
+	AudioUnitSetParameter(this->filterUnit, kLowPassParam_CutoffFrequency, kAudioUnitScope_Global, 0, (float)(this->_sampleRate / 2) * (this->filterCutoff * this->filterCutoff), 0);
+	AudioUnitSetParameter(this->filterUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, 40.0 * this->filterResonance, 0);
 
 	return noErr;
 }
@@ -256,6 +258,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		oscillator1Waveform = ConsumerSynthWaveformSine;
 		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
 		glide = 0;
+		filterCutoff = 1.0;
+		filterResonance = 0;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;
