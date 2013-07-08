@@ -214,7 +214,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 					value = saw(angle);
 				}
 				
-				l = value * amplitude;
+				l = value * (amplitude * amplitude);
 				r = l;
 				
 				this->_currentFrequency = frequency;
