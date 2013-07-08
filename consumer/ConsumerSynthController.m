@@ -54,11 +54,13 @@
 
 - (void)setNote:(NSInteger)note
 {
+	_note = note;
 	self.synthChannel.currentNote = note;
 }
 
 - (void)setWaveform:(ConsumerSynthWaveform)waveform
 {
+	_waveform = waveform;
 	self.synthChannel->oscillator1Waveform = waveform;
 }
 

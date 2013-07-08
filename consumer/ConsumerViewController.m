@@ -67,6 +67,8 @@
 @property (nonatomic) ConsumerKeyboardView *keyboardView;
 @property (nonatomic, assign) NSInteger activeNote;
 @property (nonatomic) ConsumerSynthController *synthController;
+@property (nonatomic) IBOutlet UILabel *octaveLabel;
+@property (nonatomic, assign) NSInteger octave;
 @end
 
 @implementation ConsumerViewController
@@ -161,8 +163,8 @@
 	else if (self.activeNote != note)
 	{
 		self.activeNote = note;
-		self.synthController.note = note + 51;
-		NSLog(@"%d", note);
+		self.synthController.note = note + (self.octave * 12);
+		NSLog(@"%d", self.synthController.note);
 	}
 }
 
@@ -247,6 +249,16 @@
 	}
 }
 
+- (IBAction)octaveStepperValueChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UIStepper class]])
+	{
+		UIStepper *stepper = (UIStepper *)sender;
+		self.octave = (NSInteger)stepper.value;
+		self.octaveLabel.text = [NSString stringWithFormat:@"%d", self.octave];
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad
@@ -254,6 +266,7 @@
     [super viewDidLoad];
 	
 	self.synthController = [[ConsumerSynthController alloc] init];
+	self.octave = 4;
 }
 
 - (void)viewDidAppear:(BOOL)animated
