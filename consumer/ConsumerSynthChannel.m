@@ -183,6 +183,12 @@ float applyFrequencyGlide(ConsumerSynthChannel *this)
 	return frequency;
 }
 
+void applyFilter(ConsumerSynthChannel *this, float cutoff, float resonance)
+{
+	AudioUnitSetParameter(this->filterUnit, kLowPassParam_CutoffFrequency, kAudioUnitScope_Global, 0, cutoff, 0);
+	AudioUnitSetParameter(this->filterUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, resonance, 0);
+}
+
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	for (NSInteger i = 0; i < frames; i++)
@@ -240,9 +246,10 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		((float *)audio->mBuffers[1].mData)[i] = r;
 	}
 	
-	AudioUnitSetParameter(this->filterUnit, kLowPassParam_CutoffFrequency, kAudioUnitScope_Global, 0, (float)(this->_sampleRate / 2) * (this->filterCutoff * this->filterCutoff), 0);
-	AudioUnitSetParameter(this->filterUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, 40.0 * this->filterResonance, 0);
-
+	float cutoff = (float)(this->_sampleRate / 2) * (this->filterCutoff * this->filterCutoff);
+	float resonance = 40.0 * this->filterResonance;
+	applyFilter(this, cutoff, resonance);
+	
 	return noErr;
 }
 
