@@ -152,6 +152,38 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	return amplitude;
 }
 
+float applyFrequencyGlide(ConsumerSynthChannel *this)
+{
+	float frequency = 0;
+	
+	if ( ! floatsAreEqual(this->_currentFrequency, this->_targetFrequency))
+	{
+		float glide = this->glide;
+		if (glide > 0)
+		{
+			float diff = this->_targetFrequency - this->_startFrequency;
+			float timeDiff = glide * ConsumerMaxStateLength;
+			float frequencyStep = diff / timeDiff;
+			frequency = this->_currentFrequency + frequencyStep;
+		}
+		else
+		{
+			frequency = this->_targetFrequency;
+		}
+		
+		if ((this->_targetFrequency > this->_startFrequency && frequency > this->_targetFrequency) || (this->_targetFrequency < this->_startFrequency && frequency < this->_targetFrequency))
+		{
+			frequency = this->_targetFrequency;
+		}
+	}
+	else
+	{
+		frequency = noteFrequency(this->_note);
+	}
+	
+	return frequency;
+}
+
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	for (NSInteger i = 0; i < frames; i++)
@@ -163,37 +195,11 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		{
 			float amplitude = applyVolumeEnvelope(this);
 
-			NSInteger note = this->_note;
 			float value = 0;
-			if (note > 0)
+			if (this->_note > 0)
 			{
-				float frequency = 0;
-				
-				if ( ! floatsAreEqual(this->_currentFrequency, this->_targetFrequency))
-				{
-					float glide = this->glide;					
-					if (glide > 0)
-					{
-						float diff = this->_targetFrequency - this->_startFrequency;
-						float timeDiff = glide * ConsumerMaxStateLength;
-						float frequencyStep = diff / timeDiff;
-						frequency = this->_currentFrequency + frequencyStep;
-					}
-					else
-					{
-						frequency = this->_targetFrequency;
-					}
-					
-					if ((this->_targetFrequency > this->_startFrequency && frequency > this->_targetFrequency) || (this->_targetFrequency < this->_startFrequency && frequency < this->_targetFrequency))
-					{
-						frequency = this->_targetFrequency;
-					}
-				}
-				else
-				{
-					frequency = noteFrequency(note);
-				}
-				
+				float frequency = applyFrequencyGlide(this);
+
 				float angle = this->_angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
 				angle = fmodf(angle, M_PI * 2.0);
 				
@@ -226,6 +232,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		{
 			this->_noteTime = 0;
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
+			this->_angle = 0;
 		}
 		
 		clampStereo(&l, &r, 1.0);
