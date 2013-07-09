@@ -24,8 +24,10 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 @implementation ConsumerSynthChannel
 {
 	NSInteger _amplitudeEnvelopePosition;
+	NSInteger _filterEnvelopePosition;
 	NSInteger _note;
 	ConsumerEnvelopeState _amplitudeEnvelopeState;
+	ConsumerEnvelopeState _filterEnvelopeState;
 	float _sampleRate;
 	float _noteTime;
 	float _startFrequency;
@@ -154,6 +156,85 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	return amplitude;
 }
 
+void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
+{
+	if (floatsAreEqual(this->_noteTime, 0))
+	{
+		this->_filterEnvelopeState = ConsumerEnvelopeStateAttack;
+		this->_filterEnvelopePosition = 0;
+	}
+	
+	float cutoff = 0;
+	float resonance = 0;
+	
+	if (this->_filterEnvelopeState == ConsumerEnvelopeStateAttack)
+	{
+		float attackLength = this->filterEnvelope.attack * ConsumerMaxStateLength;
+		
+		if (this->_filterEnvelopePosition < attackLength)
+		{
+			cutoff = (this->_filterEnvelopePosition / attackLength) * this->filterCutoff;
+			resonance = (this->_filterEnvelopePosition / attackLength) * this->filterResonance;
+			this->_filterEnvelopePosition += frames;
+		}
+		else
+		{
+			this->_filterEnvelopeState = ConsumerEnvelopeStateDecay;
+			this->_filterEnvelopePosition = 0;
+		}
+	}
+	
+	if (this->_filterEnvelopeState == ConsumerEnvelopeStateDecay)
+	{
+		float decayLength = this->filterEnvelope.decay * ConsumerMaxStateLength;
+		
+		if (this->_filterEnvelopePosition < decayLength)
+		{
+			cutoff = (1.0 - ((this->_filterEnvelopePosition / decayLength) * (1.0 - this->filterEnvelope.sustain))) * this->filterCutoff;
+			resonance = (1.0 - ((this->_filterEnvelopePosition / decayLength) * (1.0 - this->filterEnvelope.sustain))) * this->filterResonance;
+			this->_filterEnvelopePosition += frames;
+		}
+		else
+		{
+			this->_filterEnvelopeState = ConsumerEnvelopeStateSustain;
+			this->_filterEnvelopePosition = 0;
+		}
+	}
+	
+	if (this->_filterEnvelopeState == ConsumerEnvelopeStateSustain)
+	{
+		cutoff = this->filterEnvelope.sustain * this->filterCutoff;
+		resonance = this->filterEnvelope.sustain * this->filterResonance;
+		
+		if (this->_currentNote == ConsumerNoteOff)
+		{
+			this->_filterEnvelopeState = ConsumerEnvelopeStateRelease;
+			this->_filterEnvelopePosition = 0;
+		}
+	}
+	
+	if (this->_filterEnvelopeState == ConsumerEnvelopeStateRelease)
+	{
+		float releaseLength = this->filterEnvelope.release * ConsumerMaxStateLength;
+		
+		if (this->_filterEnvelopePosition < releaseLength)
+		{
+			cutoff = (this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain)) * this->filterCutoff;
+			resonance = (this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain)) * this->filterResonance;
+			this->_filterEnvelopePosition += frames;
+		}
+		else
+		{
+			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
+		}
+	}
+		
+	convertLinearValue(&cutoff);
+	float finalCutoff = (float)(this->_sampleRate / 2) * cutoff;
+	float finalResonance = 40.0 * resonance;
+	applyFilter(this, finalCutoff, finalResonance);
+}
+
 float applyFrequencyGlide(ConsumerSynthChannel *this)
 {
 	float frequency = 0;
@@ -200,6 +281,11 @@ void convertLinearValue(float *value)
 
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
+	if (this->_note > 0)
+	{
+		applyFilterEnvelope(this, frames);
+	}
+	
 	for (NSInteger i = 0; i < frames; i++)
 	{
 		float l = 0;
@@ -243,6 +329,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		{
 			this->_noteTime = 0;
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
+			this->_filterEnvelopeState = ConsumerEnvelopeStateMax;
 			this->_angle = 0;
 		}
 		
@@ -251,12 +338,6 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		((float *)audio->mBuffers[0].mData)[i] = l;
 		((float *)audio->mBuffers[1].mData)[i] = r;
 	}
-	
-	float cutoffValue = this->filterCutoff;
-	convertLinearValue(&cutoffValue);
-	float cutoff = (float)(this->_sampleRate / 2) * cutoffValue;
-	float resonance = 40.0 * this->filterResonance;
-	applyFilter(this, cutoff, resonance);
 	
 	return noErr;
 }
@@ -280,6 +361,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		_currentNote = 0;
 		_note = 0;
 		_noteTime = 0;
+		_amplitudeEnvelopePosition = 0;
+		_filterEnvelopePosition = 0;
 	}
 	
 	return self;

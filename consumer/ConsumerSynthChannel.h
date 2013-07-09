@@ -39,6 +39,7 @@ const NSInteger ConsumerNoteOff = -1;
 	AudioUnit filterUnit;
 	float filterCutoff; // range: 0 - 1.0
 	float filterResonance; // range: -0.5 - 1.0
+	float filterEnv; // range: 0 - 1.0
 }
 
 @property (nonatomic, assign) NSInteger currentNote;

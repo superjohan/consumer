@@ -269,6 +269,7 @@
 	if ([sender isKindOfClass:[UISlider class]])
 	{
 		UISlider *slider = (UISlider *)sender;
+		self.synthController.filterAttack = slider.value;
 	}
 }
 
@@ -277,6 +278,7 @@
 	if ([sender isKindOfClass:[UISlider class]])
 	{
 		UISlider *slider = (UISlider *)sender;
+		self.synthController.filterDecay = slider.value;
 	}
 }
 
@@ -285,6 +287,7 @@
 	if ([sender isKindOfClass:[UISlider class]])
 	{
 		UISlider *slider = (UISlider *)sender;
+		self.synthController.filterSustain = slider.value;
 	}
 }
 
@@ -293,6 +296,7 @@
 	if ([sender isKindOfClass:[UISlider class]])
 	{
 		UISlider *slider = (UISlider *)sender;
+		self.synthController.filterRelease = slider.value;
 	}
 }
 
