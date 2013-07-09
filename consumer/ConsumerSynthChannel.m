@@ -192,6 +192,12 @@ void applyFilter(ConsumerSynthChannel *this, float cutoff, float resonance)
 	AudioUnitSetParameter(this->filterUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, resonance, 0);
 }
 
+void convertLinearValue(float *value)
+{
+	float v = *value;
+	*value = v * v;
+}
+
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	for (NSInteger i = 0; i < frames; i++)
@@ -202,39 +208,36 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		if (this->_note > 0)
 		{
 			float amplitude = applyVolumeEnvelope(this);
-
+			float frequency = applyFrequencyGlide(this);
+			float angle = this->_angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
+			angle = fmodf(angle, M_PI * 2.0);
 			float value = 0;
-			if (this->_note > 0)
+			
+			if (this->oscillator1Waveform == ConsumerSynthWaveformSine)
 			{
-				float frequency = applyFrequencyGlide(this);
-
-				float angle = this->_angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
-				angle = fmodf(angle, M_PI * 2.0);
-				
-				if (this->oscillator1Waveform == ConsumerSynthWaveformSine)
-				{
-					value = sinf(angle);
-				}
-				else if (this->oscillator1Waveform == ConsumerSynthWaveformSquare)
-				{
-					value = square(angle, 0.5);
-				}
-				else if (this->oscillator1Waveform == ConsumerSynthWaveformTriangle)
-				{
-					value = triangle(angle);
-				}
-				else if (this->oscillator1Waveform == ConsumerSynthWaveformSaw)
-				{
-					value = saw(angle);
-				}
-				
-				l = value * (amplitude * amplitude);
-				r = l;
-				
-				this->_currentFrequency = frequency;
-				this->_noteTime += .001; // FIXME
-				this->_angle = angle;
+				value = sinf(angle);
 			}
+			else if (this->oscillator1Waveform == ConsumerSynthWaveformSquare)
+			{
+				value = square(angle, 0.5);
+			}
+			else if (this->oscillator1Waveform == ConsumerSynthWaveformTriangle)
+			{
+				value = triangle(angle);
+			}
+			else if (this->oscillator1Waveform == ConsumerSynthWaveformSaw)
+			{
+				value = saw(angle);
+			}
+			
+			convertLinearValue(&amplitude);
+			
+			l = value * amplitude;
+			r = l;
+			
+			this->_currentFrequency = frequency;
+			this->_noteTime += .001; // FIXME
+			this->_angle = angle;
 		}
 		else
 		{
@@ -249,7 +252,9 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		((float *)audio->mBuffers[1].mData)[i] = r;
 	}
 	
-	float cutoff = (float)(this->_sampleRate / 2) * (this->filterCutoff * this->filterCutoff);
+	float cutoffValue = this->filterCutoff;
+	convertLinearValue(&cutoffValue);
+	float cutoff = (float)(this->_sampleRate / 2) * cutoffValue;
 	float resonance = 40.0 * this->filterResonance;
 	applyFilter(this, cutoff, resonance);
 	
