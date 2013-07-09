@@ -107,7 +107,8 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 			this->_envelopePosition = 0;
 		}
 	}
-	else if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateDecay)
+	
+	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateDecay)
 	{
 		float decayLength = this->amplitudeEnvelope.decay * ConsumerMaxStateLength;
 
@@ -121,7 +122,8 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateSustain;
 		}
 	}
-	else if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateSustain)
+	
+	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateSustain)
 	{
 		amplitude = this->amplitudeEnvelope.sustain;
 
@@ -131,7 +133,8 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 			this->_envelopePosition = 0;
 		}
 	}
-	else if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateRelease)
+	
+	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateRelease)
 	{
 		float releaseLength = this->amplitudeEnvelope.release * ConsumerMaxStateLength;
 
