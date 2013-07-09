@@ -259,6 +259,11 @@
 	}
 }
 
+- (IBAction)keyboardToggleTouched:(id)sender
+{
+	self.keyboardView.hidden = !self.keyboardView.hidden;
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad
