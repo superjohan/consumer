@@ -23,7 +23,7 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 
 @implementation ConsumerSynthChannel
 {
-	NSInteger _envelopePosition;
+	NSInteger _amplitudeEnvelopePosition;
 	NSInteger _note;
 	ConsumerEnvelopeState _amplitudeEnvelopeState;
 	float _sampleRate;
@@ -89,22 +89,22 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	if (floatsAreEqual(this->_noteTime, 0))
 	{
 		this->_amplitudeEnvelopeState = ConsumerEnvelopeStateAttack;
-		this->_envelopePosition = 0;
+		this->_amplitudeEnvelopePosition = 0;
 	}
 
 	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateAttack)
 	{
 		float attackLength = this->amplitudeEnvelope.attack * ConsumerMaxStateLength;
 
-		if (this->_envelopePosition < attackLength)
+		if (this->_amplitudeEnvelopePosition < attackLength)
 		{
-			amplitude = this->_envelopePosition / attackLength;
-			this->_envelopePosition++;
+			amplitude = this->_amplitudeEnvelopePosition / attackLength;
+			this->_amplitudeEnvelopePosition++;
 		}
 		else
 		{
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateDecay;
-			this->_envelopePosition = 0;
+			this->_amplitudeEnvelopePosition = 0;
 		}
 	}
 	
@@ -112,10 +112,10 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	{
 		float decayLength = this->amplitudeEnvelope.decay * ConsumerMaxStateLength;
 
-		if (this->_envelopePosition < decayLength)
+		if (this->_amplitudeEnvelopePosition < decayLength)
 		{
-			amplitude = 1.0 - ((this->_envelopePosition / decayLength) * (1.0 - this->amplitudeEnvelope.sustain));
-			this->_envelopePosition++;
+			amplitude = 1.0 - ((this->_amplitudeEnvelopePosition / decayLength) * (1.0 - this->amplitudeEnvelope.sustain));
+			this->_amplitudeEnvelopePosition++;
 		}
 		else
 		{
@@ -130,7 +130,7 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 		if (this->_currentNote == ConsumerNoteOff)
 		{
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateRelease;
-			this->_envelopePosition = 0;
+			this->_amplitudeEnvelopePosition = 0;
 		}
 	}
 	
@@ -138,10 +138,10 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	{
 		float releaseLength = this->amplitudeEnvelope.release * ConsumerMaxStateLength;
 
-		if (this->_envelopePosition < releaseLength)
+		if (this->_amplitudeEnvelopePosition < releaseLength)
 		{
-			amplitude = this->amplitudeEnvelope.sustain - ((this->_envelopePosition / releaseLength) * this->amplitudeEnvelope.sustain);
-			this->_envelopePosition++;
+			amplitude = this->amplitudeEnvelope.sustain - ((this->_amplitudeEnvelopePosition / releaseLength) * this->amplitudeEnvelope.sustain);
+			this->_amplitudeEnvelopePosition++;
 		}
 		else
 		{
@@ -272,6 +272,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 	{
 		oscillator1Waveform = ConsumerSynthWaveformSine;
 		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
+		filterEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
 		glide = 0;
 		filterCutoff = 1.0;
 		filterResonance = 0;
@@ -286,7 +287,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 
 - (void)setCurrentNote:(NSInteger)currentNote
 {
-	@synchronized(self)
+	@synchronized (self)
 	{
 		if (_currentNote <= 0)
 		{

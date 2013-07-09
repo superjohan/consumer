@@ -17,6 +17,10 @@
 @property (nonatomic, assign) float amplitudeDecay;
 @property (nonatomic, assign) float amplitudeSustain;
 @property (nonatomic, assign) float amplitudeRelease;
+@property (nonatomic, assign) float filterAttack;
+@property (nonatomic, assign) float filterDecay;
+@property (nonatomic, assign) float filterSustain;
+@property (nonatomic, assign) float filterRelease;
 @property (nonatomic, assign) float glide;
 @property (nonatomic, assign) float filterCutoff;
 @property (nonatomic, assign) float filterResonance;

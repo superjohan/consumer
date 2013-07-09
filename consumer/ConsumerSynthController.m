@@ -141,4 +141,48 @@
 	self.synthChannel->filterResonance = filterResonance;
 }
 
+- (void)setFilterAttack:(float)filterAttack
+{
+	if (filterAttack < 0 || filterAttack > 1.0)
+	{
+		return;
+	}
+	
+	_filterAttack = filterAttack;
+	self.synthChannel->filterEnvelope.attack = filterAttack;
+}
+
+- (void)setFilterDecay:(float)filterDecay
+{
+	if (filterDecay < 0 || filterDecay > 1.0)
+	{
+		return;
+	}
+	
+	_filterDecay = filterDecay;
+	self.synthChannel->filterEnvelope.decay = filterDecay;
+}
+
+- (void)setFilterSustain:(float)filterSustain
+{
+	if (filterSustain < 0 || filterSustain > 1.0)
+	{
+		return;
+	}
+	
+	_filterSustain = filterSustain;
+	self.synthChannel->filterEnvelope.sustain = filterSustain;
+}
+
+- (void)setFilterRelease:(float)filterRelease
+{
+	if (filterRelease < 0 || filterRelease > 1.0)
+	{
+		return;
+	}
+	
+	_filterRelease = filterRelease;
+	self.synthChannel->filterEnvelope.release = filterRelease;
+}
+
 @end

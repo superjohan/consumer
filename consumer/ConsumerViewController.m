@@ -264,6 +264,38 @@
 	self.keyboardView.hidden = !self.keyboardView.hidden;
 }
 
+- (IBAction)filterAttackSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+	}
+}
+
+- (IBAction)filterDecaySliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+	}
+}
+
+- (IBAction)filterSustainSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+	}
+}
+
+- (IBAction)filterReleaseSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad

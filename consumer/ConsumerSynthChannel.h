@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <TheAmazingAudioEngine/TheAmazingAudioEngine.h>
 
+// range on all values: 0 - 1.0
 typedef struct
 {
 	float attack;
@@ -32,6 +33,7 @@ const NSInteger ConsumerNoteOff = -1;
 {
 	@public
 	ConsumerADSREnvelope amplitudeEnvelope;
+	ConsumerADSREnvelope filterEnvelope;
 	ConsumerSynthWaveform oscillator1Waveform;
 	float glide; // range: 0 - 1.0
 	AudioUnit filterUnit;
