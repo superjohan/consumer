@@ -22,6 +22,9 @@
 		905F86851781A31400516DE3 /* ConsumerSynthController.m in Sources */ = {isa = PBXBuildFile; fileRef = 905F86841781A31400516DE3 /* ConsumerSynthController.m */; };
 		905F86881781A39800516DE3 /* ConsumerSynthChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 905F86871781A39800516DE3 /* ConsumerSynthChannel.m */; };
 		905F868B1781A3D900516DE3 /* ConsumerHelperFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = 905F868A1781A3D900516DE3 /* ConsumerHelperFunctions.m */; };
+		90D43B87178D5EDF00BC9322 /* Icon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 90D43B85178D5EDF00BC9322 /* Icon@2x.png */; };
+		90D43B88178D5EDF00BC9322 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 90D43B86178D5EDF00BC9322 /* Icon.png */; };
+		90D43B8A178D5F7800BC9322 /* Icon-ios7.png in Resources */ = {isa = PBXBuildFile; fileRef = 90D43B89178D5F7800BC9322 /* Icon-ios7.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +51,9 @@
 		905F86871781A39800516DE3 /* ConsumerSynthChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConsumerSynthChannel.m; sourceTree = "<group>"; };
 		905F86891781A3D900516DE3 /* ConsumerHelperFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsumerHelperFunctions.h; sourceTree = "<group>"; };
 		905F868A1781A3D900516DE3 /* ConsumerHelperFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ConsumerHelperFunctions.m; sourceTree = "<group>"; };
+		90D43B85178D5EDF00BC9322 /* Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon@2x.png"; sourceTree = "<group>"; };
+		90D43B86178D5EDF00BC9322 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		90D43B89178D5F7800BC9322 /* Icon-ios7.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-ios7.png"; sourceTree = "<group>"; };
 		A05886A4286947D89113D076 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -117,6 +123,9 @@
 		903EBBBF17818EB600D43246 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				90D43B89178D5F7800BC9322 /* Icon-ios7.png */,
+				90D43B85178D5EDF00BC9322 /* Icon@2x.png */,
+				90D43B86178D5EDF00BC9322 /* Icon.png */,
 				903EBBC017818EB600D43246 /* consumer-Info.plist */,
 				903EBBC117818EB600D43246 /* InfoPlist.strings */,
 				903EBBC417818EB600D43246 /* main.m */,
@@ -182,10 +191,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				90D43B8A178D5F7800BC9322 /* Icon-ios7.png in Resources */,
 				903EBBC317818EB600D43246 /* InfoPlist.strings in Resources */,
+				90D43B87178D5EDF00BC9322 /* Icon@2x.png in Resources */,
 				903EBBCB17818EB600D43246 /* Default.png in Resources */,
 				903EBBCD17818EB600D43246 /* Default@2x.png in Resources */,
 				903EBBCF17818EB600D43246 /* Default-568h@2x.png in Resources */,
+				90D43B88178D5EDF00BC9322 /* Icon.png in Resources */,
 				903EBBD517818EB600D43246 /* ConsumerViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
