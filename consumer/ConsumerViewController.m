@@ -300,6 +300,15 @@
 	}
 }
 
+- (IBAction)filterPeakSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.filterPeak = slider.value;
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad

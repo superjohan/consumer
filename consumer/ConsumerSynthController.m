@@ -185,4 +185,26 @@
 	self.synthChannel->filterEnvelope.release = filterRelease;
 }
 
+- (void)setFilterEnv:(float)filterEnv
+{
+	if (filterEnv < -1.0 || filterEnv > 1.0)
+	{
+		return;
+	}
+	
+	_filterEnv = filterEnv;
+	self.synthChannel->filterEnv = filterEnv;
+}
+
+- (void)setFilterPeak:(float)filterPeak
+{
+	if (filterPeak < 0 || filterPeak > 1.0)
+	{
+		return;
+	}
+	
+	_filterPeak = filterPeak;
+	self.synthChannel->filterPeak = filterPeak;
+}
+
 @end

@@ -173,8 +173,8 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		
 		if (this->_filterEnvelopePosition < attackLength)
 		{
-			cutoff = (this->_filterEnvelopePosition / attackLength) * this->filterCutoff;
-			resonance = (this->_filterEnvelopePosition / attackLength) * this->filterResonance;
+			cutoff = (this->_filterEnvelopePosition / attackLength) * this->filterPeak;
+			resonance = (this->_filterEnvelopePosition / attackLength) * this->filterPeak;
 			this->_filterEnvelopePosition += frames;
 		}
 		else
@@ -190,8 +190,8 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		
 		if (this->_filterEnvelopePosition < decayLength)
 		{
-			cutoff = (1.0 - ((this->_filterEnvelopePosition / decayLength) * (1.0 - this->filterEnvelope.sustain))) * this->filterCutoff;
-			resonance = (1.0 - ((this->_filterEnvelopePosition / decayLength) * (1.0 - this->filterEnvelope.sustain))) * this->filterResonance;
+			cutoff = this->filterPeak - ((this->_filterEnvelopePosition / decayLength) * (this->filterPeak - this->filterEnvelope.sustain));
+			resonance = this->filterPeak - ((this->_filterEnvelopePosition / decayLength) * (this->filterPeak - this->filterEnvelope.sustain));
 			this->_filterEnvelopePosition += frames;
 		}
 		else
@@ -203,8 +203,8 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 	
 	if (this->_filterEnvelopeState == ConsumerEnvelopeStateSustain)
 	{
-		cutoff = this->filterEnvelope.sustain * this->filterCutoff;
-		resonance = this->filterEnvelope.sustain * this->filterResonance;
+		cutoff = this->filterEnvelope.sustain;
+		resonance = this->filterEnvelope.sustain;
 		
 		if (this->_currentNote == ConsumerNoteOff)
 		{
@@ -219,8 +219,8 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		
 		if (this->_filterEnvelopePosition < releaseLength)
 		{
-			cutoff = (this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain)) * this->filterCutoff;
-			resonance = (this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain)) * this->filterResonance;
+			cutoff = this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain);
+			resonance = this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain);
 			this->_filterEnvelopePosition += frames;
 		}
 		else
@@ -230,8 +230,8 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 	}
 		
 	convertLinearValue(&cutoff);
-	float finalCutoff = (float)(this->_sampleRate / 2) * cutoff;
-	float finalResonance = 40.0 * resonance;
+	float finalCutoff = (float)(this->_sampleRate / 2) * (cutoff * this->filterCutoff);
+	float finalResonance = 40.0 * (resonance * this->filterResonance);
 	applyFilter(this, finalCutoff, finalResonance);
 }
 
@@ -357,6 +357,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		glide = 0;
 		filterCutoff = 1.0;
 		filterResonance = 0;
+		filterEnv = 0;
+		filterPeak = 1.0;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;
