@@ -26,5 +26,9 @@
 @property (nonatomic, assign) float filterResonance;
 @property (nonatomic, assign) float filterEnv;
 @property (nonatomic, assign) float filterPeak;
+@property (nonatomic, assign) BOOL reverb;
+@property (nonatomic, assign) BOOL delay;
+
+- (void)configure;
 
 @end

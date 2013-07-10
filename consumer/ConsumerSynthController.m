@@ -13,6 +13,8 @@
 @interface ConsumerSynthController ()
 @property (nonatomic) AEAudioController *audioController;
 @property (nonatomic) ConsumerSynthChannel *synthChannel;
+@property (nonatomic) AEAudioUnitFilter *reverbFilter;
+@property (nonatomic) AEAudioUnitFilter *delayFilter;
 @end
 
 @implementation ConsumerSynthController
@@ -37,10 +39,29 @@
 		AudioUnitSetParameter(lowpassFilter.audioUnit, kLowPassParam_CutoffFrequency, kAudioUnitScope_Global, 0, _audioController.audioDescription.mSampleRate / 2, 0);
 		AudioUnitSetParameter(lowpassFilter.audioUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, 0.0, 0);
 		
-		[_audioController addFilter:lowpassFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
-		
 		_synthChannel->filterUnit = lowpassFilter.audioUnit;
 		
+		AudioComponentDescription delayComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_Delay);
+		NSError *delayError = nil;
+		_delayFilter = [[AEAudioUnitFilter alloc] initWithComponentDescription:delayComponent audioController:_audioController error:&delayError];
+		if (_delayFilter == nil)
+		{
+			NSLog(@"Error creating delay: %@", delayError);
+		}
+		
+		
+		AudioComponentDescription reverbComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_Reverb2);
+		NSError *reverbError = nil;
+		_reverbFilter = [[AEAudioUnitFilter alloc] initWithComponentDescription:reverbComponent audioController:_audioController error:&reverbError];
+		if (_reverbFilter == nil)
+		{
+			NSLog(@"Error creating reverb: %@", reverbError);
+		}
+		
+		[_audioController addFilter:_reverbFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
+		[_audioController addFilter:_delayFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
+		[_audioController addFilter:lowpassFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
+
 		NSError *error = nil;
 		if ( ! [_audioController start:&error])
 		{
@@ -51,6 +72,8 @@
 	
 	return self;
 }
+
+#pragma mark - Properties
 
 - (void)setNote:(NSInteger)note
 {
@@ -205,6 +228,45 @@
 	
 	_filterPeak = filterPeak;
 	self.synthChannel->filterPeak = filterPeak;
+}
+
+- (void)setReverb:(BOOL)reverb
+{
+	_reverb = reverb;
+
+	if (reverb)
+	{
+		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, 40.0, 0);
+		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DecayTimeAt0Hz, kAudioUnitScope_Global, 0, 3.0, 0);
+		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DecayTimeAtNyquist, kAudioUnitScope_Global, 0, 3.0, 0);
+	}
+	else
+	{
+		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, 0, 0);
+	}
+}
+
+- (void)setDelay:(BOOL)delay
+{
+	_delay = delay;
+	
+	if (delay)
+	{
+		AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, 10.0, 0);
+		AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_DelayTime, kAudioUnitScope_Global, 0, 0.3, 0);
+	}
+	else
+	{
+		AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, 0, 0);
+	}
+}
+
+#pragma mark - Public
+
+- (void)configure
+{
+	self.reverb = NO;
+	self.delay = NO;
 }
 
 @end

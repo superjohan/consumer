@@ -309,6 +309,16 @@
 	}
 }
 
+- (IBAction)reverbButtonTouched:(id)sender
+{
+	self.synthController.reverb = !self.synthController.reverb;
+}
+
+- (IBAction)delayButtonTouched:(id)sender
+{
+	self.synthController.delay = !self.synthController.delay;
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad
@@ -316,6 +326,7 @@
     [super viewDidLoad];
 	
 	self.synthController = [[ConsumerSynthController alloc] init];
+	[self.synthController configure];
 	self.octave = 4;
 }
 
