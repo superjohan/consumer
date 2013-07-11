@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, ConsumerSynthWaveform)
 	ConsumerSynthWaveformSaw,
 };
 
-const NSInteger ConsumerNoteOff = -1;
+static const NSInteger ConsumerNoteOff = -1;
 
 @interface ConsumerSynthChannel : NSObject
 {

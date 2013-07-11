@@ -164,9 +164,9 @@
 	}
 	else if (self.activeNote != note)
 	{
+		note += 3; // jeeeesus christ
 		self.activeNote = note;
 		self.synthController.note = note + (self.octave * 12);
-		NSLog(@"%d", self.synthController.note);
 	}
 }
 

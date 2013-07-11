@@ -30,18 +30,26 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	ConsumerEnvelopeState _filterEnvelopeState;
 	float _sampleRate;
 	float _noteTime;
-	float _startFrequency;
-	float _currentFrequency;
-	float _targetFrequency;
+	float _osc1StartFrequency;
+	float _osc1CurrentFrequency;
+	float _osc1TargetFrequency;
+	float _osc2StartFrequency;
+	float _osc2CurrentFrequency;
+	float _osc2TargetFrequency;
 	float _osc1Angle;
 	float _osc2Angle;
 }
 
 const NSInteger ConsumerMaxStateLength = 44100;
 
-float noteFrequency(NSInteger note)
+float noteFrequency(float note)
 {
 	return powf(2.0, ((note - 49.0) / 12.0)) * 440.0;
+}
+
+float noteFromFrequency(float frequency)
+{
+	return 12.0 * log2f(frequency / 440.0) + 49.0;
 }
 
 float square(float input, float width)
@@ -236,33 +244,37 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 	applyFilter(this, finalCutoff, finalResonance);
 }
 
-float applyFrequencyGlide(ConsumerSynthChannel *this)
+float applyFrequencyGlide(float glide, float startFrequency, float currentFrequency, float targetFrequency, NSInteger note)
 {
+	if (note == 0) // band aid for threading issues...
+	{
+		return currentFrequency;
+	}
+	
 	float frequency = 0;
 	
-	if ( ! floatsAreEqual(this->_currentFrequency, this->_targetFrequency))
+	if ( ! floatsAreEqual(currentFrequency, targetFrequency))
 	{
-		float glide = this->glide;
 		if (glide > 0)
 		{
-			float diff = this->_targetFrequency - this->_startFrequency;
+			float diff = targetFrequency - startFrequency;
 			float timeDiff = glide * ConsumerMaxStateLength;
 			float frequencyStep = diff / timeDiff;
-			frequency = this->_currentFrequency + frequencyStep;
+			frequency = currentFrequency + frequencyStep;
 		}
 		else
 		{
-			frequency = this->_targetFrequency;
+			frequency = targetFrequency;
 		}
 		
-		if ((this->_targetFrequency > this->_startFrequency && frequency > this->_targetFrequency) || (this->_targetFrequency < this->_startFrequency && frequency < this->_targetFrequency))
+		if ((targetFrequency > startFrequency && frequency > targetFrequency) || (targetFrequency < startFrequency && frequency < targetFrequency))
 		{
-			frequency = this->_targetFrequency;
+			frequency = targetFrequency;
 		}
 	}
 	else
 	{
-		frequency = noteFrequency(this->_note);
+		frequency = noteFrequency(note);
 	}
 	
 	return frequency;
@@ -280,7 +292,7 @@ void convertLinearValue(float *value)
 	*value = v * v;
 }
 
-void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float *angle, ConsumerSynthWaveform waveform)
+void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float originalFrequency, float *angle, ConsumerSynthWaveform waveform, float *currentFrequency)
 {
 	float angle1 = *angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
 	angle1 = fmodf(angle1, M_PI * 2.0);
@@ -306,14 +318,47 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 	convertLinearValue(&amplitude);
 	
 	*sample = value * amplitude;
-	this->_currentFrequency = frequency;
+	*currentFrequency = originalFrequency;
 	*angle = angle1;
+}
+
+void applyDetune(float detune, float *frequency)
+{
+	float f = *frequency;
+	
+	if (detune < 0)
+	{
+		float currentNote = noteFromFrequency(f);
+		float min = noteFrequency(currentNote - 1.0);
+		float freq = ((min / f) * detune) * (min - f);
+		*frequency = f - freq;
+	}
+	else if (detune > 0)
+	{
+		float currentNote = noteFromFrequency(f);
+		float max = noteFrequency(currentNote + 1.0);
+		float freq = ((max / f) * detune) * (max - f);
+		*frequency = f + freq;
+	}
+}
+
+void applyOctave(NSInteger octave, float *frequency)
+{
+	if (octave == 0)
+	{
+		return;
+	}
+	
+	float note = noteFromFrequency(*frequency);
+	float freq = noteFrequency(note + (octave * 12));
+	*frequency = freq;
 }
 
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	if (this->_note > 0)
 	{
+		// TODO: move to main sample calculation loop when using own filter implementation
 		applyFilterEnvelope(this, frames);
 	}
 	
@@ -324,14 +369,21 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		if (this->_note > 0)
 		{
 			float amplitude = applyVolumeEnvelope(this);
-			float frequency = applyFrequencyGlide(this);
 			
 			float osc1 = 0;
-			calculateSample(this, &osc1, amplitude, frequency, &this->_osc1Angle, this->oscillator1Waveform);
+			float osc1Freq = applyFrequencyGlide(this->glide, this->_osc1StartFrequency, this->_osc1CurrentFrequency, this->_osc1TargetFrequency, this->_note);
+			float detunedOsc1 = osc1Freq;
+			applyDetune(this->oscillator1Detune, &detunedOsc1);
+			applyOctave(this->oscillator1Octave, &detunedOsc1);
+			calculateSample(this, &osc1, amplitude, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency);
 			osc1 *= this->oscillator1Amplitude;
 			
 			float osc2 = 0;
-			calculateSample(this, &osc2, amplitude, frequency, &this->_osc2Angle, this->oscillator2Waveform);
+			float osc2Freq = applyFrequencyGlide(this->glide, this->_osc2StartFrequency, this->_osc2CurrentFrequency, this->_osc2TargetFrequency, this->_note);
+			float detunedOsc2 = osc2Freq;
+			applyDetune(this->oscillator2Detune, &detunedOsc2);
+			applyOctave(this->oscillator2Octave, &detunedOsc2);
+			calculateSample(this, &osc2, amplitude, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency);
 			osc2 *= this->oscillator2Amplitude;
 			
 			sample = osc1 + osc2;
@@ -403,8 +455,12 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 
 		if (_currentNote != ConsumerNoteOff)
 		{
-			_startFrequency = _currentFrequency;
-			_targetFrequency = noteFrequency(_currentNote);
+			_osc1StartFrequency = _osc1CurrentFrequency;
+			_osc1TargetFrequency = noteFrequency(_currentNote);
+
+			_osc2StartFrequency = _osc2CurrentFrequency;
+			_osc2TargetFrequency = noteFrequency(_currentNote);
+			
 			_note = _currentNote;
 		}
 	}
