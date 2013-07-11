@@ -35,6 +35,13 @@ const NSInteger ConsumerNoteOff = -1;
 	ConsumerADSREnvelope amplitudeEnvelope;
 	ConsumerADSREnvelope filterEnvelope;
 	ConsumerSynthWaveform oscillator1Waveform;
+	float oscillator1Detune; // range: -1.0 - 1.0
+	float oscillator1Amplitude; // range: 0 - 1.0
+	NSInteger oscillator1Octave; // range: -2 - 2
+	ConsumerSynthWaveform oscillator2Waveform;
+	float oscillator2Detune; // range: -1.0 - 1.0
+	float oscillator2Amplitude; // range: 0 - 1.0
+	NSInteger oscillator2Octave; // range: -2 - 2
 	float glide; // range: 0 - 1.0
 	AudioUnit filterUnit;
 	float filterCutoff; // range: 0 - 1.0

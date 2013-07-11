@@ -69,6 +69,8 @@
 @property (nonatomic) ConsumerSynthController *synthController;
 @property (nonatomic) IBOutlet UILabel *octaveLabel;
 @property (nonatomic, assign) NSInteger octave;
+@property (nonatomic) IBOutlet UILabel *osc1OctaveLabel;
+@property (nonatomic) IBOutlet UILabel *osc2OctaveLabel;
 @end
 
 @implementation ConsumerViewController
@@ -176,13 +178,79 @@
 
 #pragma mark - IBActions
 
-- (IBAction)updatedWaveform:(id)sender
+- (IBAction)updatedOsc1Waveform:(id)sender
 {
 	if ([sender isKindOfClass:[UISegmentedControl class]])
 	{
 		UISegmentedControl *segControl = (UISegmentedControl *)sender;
 		NSInteger value = segControl.selectedSegmentIndex;
-		self.synthController.waveform = value;
+		self.synthController.osc1Waveform = value;
+	}
+}
+
+- (IBAction)osc1DetuneSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.osc1Detune = slider.value;
+	}
+}
+
+- (IBAction)osc1AmplitudeSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.osc1Amplitude = slider.value;
+	}
+}
+
+- (IBAction)osc1OctaveStepperValueChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UIStepper class]])
+	{
+		UIStepper *stepper = (UIStepper *)sender;
+		self.synthController.osc1Octave = (NSInteger)stepper.value;
+		self.osc1OctaveLabel.text = [NSString stringWithFormat:@"%d", self.synthController.osc1Octave];
+	}
+}
+
+- (IBAction)updatedOsc2Waveform:(id)sender
+{
+	if ([sender isKindOfClass:[UISegmentedControl class]])
+	{
+		UISegmentedControl *segControl = (UISegmentedControl *)sender;
+		NSInteger value = segControl.selectedSegmentIndex;
+		self.synthController.osc2Waveform = value;
+	}
+}
+
+- (IBAction)osc2DetuneSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.osc2Detune = slider.value;
+	}
+}
+
+- (IBAction)osc2AmplitudeSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.osc2Amplitude = slider.value;
+	}
+}
+
+- (IBAction)osc2OctaveStepperValueChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UIStepper class]])
+	{
+		UIStepper *stepper = (UIStepper *)sender;
+		self.synthController.osc2Octave = (NSInteger)stepper.value;
+		self.osc2OctaveLabel.text = [NSString stringWithFormat:@"%d", self.synthController.osc2Octave];
 	}
 }
 
@@ -309,14 +377,22 @@
 	}
 }
 
-- (IBAction)reverbButtonTouched:(id)sender
+- (IBAction)reverbSliderChanged:(id)sender
 {
-	self.synthController.reverb = !self.synthController.reverb;
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.reverbDryWetMix = slider.value;
+	}
 }
 
-- (IBAction)delayButtonTouched:(id)sender
+- (IBAction)delaySliderChanged:(id)sender
 {
-	self.synthController.delay = !self.synthController.delay;
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.delayDryWetMix = slider.value;
+	}
 }
 
 #pragma mark - UIViewController

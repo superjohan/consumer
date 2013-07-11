@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 float getTickLength(float bpm, float samplingRate);
+void clampChannel(float *channel, float max);
 void clampStereo(float *left, float *right, float max); // if 'max' is higher than 1.0, it's set to 1.0
 BOOL floatsAreEqual(float float1, float float2);
 

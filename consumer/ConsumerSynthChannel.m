@@ -33,7 +33,8 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _startFrequency;
 	float _currentFrequency;
 	float _targetFrequency;
-	float _angle;
+	float _osc1Angle;
+	float _osc2Angle;
 }
 
 const NSInteger ConsumerMaxStateLength = 44100;
@@ -279,6 +280,36 @@ void convertLinearValue(float *value)
 	*value = v * v;
 }
 
+void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float *angle, ConsumerSynthWaveform waveform)
+{
+	float angle1 = *angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
+	angle1 = fmodf(angle1, M_PI * 2.0);
+	float value = 0;
+	
+	if (waveform == ConsumerSynthWaveformSine)
+	{
+		value = sinf(angle1);
+	}
+	else if (waveform == ConsumerSynthWaveformSquare)
+	{
+		value = square(angle1, 0.5);
+	}
+	else if (waveform == ConsumerSynthWaveformTriangle)
+	{
+		value = triangle(angle1);
+	}
+	else if (waveform == ConsumerSynthWaveformSaw)
+	{
+		value = saw(angle1);
+	}
+	
+	convertLinearValue(&amplitude);
+	
+	*sample = value * amplitude;
+	this->_currentFrequency = frequency;
+	*angle = angle1;
+}
+
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	if (this->_note > 0)
@@ -288,55 +319,38 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 	
 	for (NSInteger i = 0; i < frames; i++)
 	{
-		float l = 0;
-		float r = 0;
+		float sample = 0;
 		
 		if (this->_note > 0)
 		{
 			float amplitude = applyVolumeEnvelope(this);
 			float frequency = applyFrequencyGlide(this);
-			float angle = this->_angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
-			angle = fmodf(angle, M_PI * 2.0);
-			float value = 0;
 			
-			if (this->oscillator1Waveform == ConsumerSynthWaveformSine)
-			{
-				value = sinf(angle);
-			}
-			else if (this->oscillator1Waveform == ConsumerSynthWaveformSquare)
-			{
-				value = square(angle, 0.5);
-			}
-			else if (this->oscillator1Waveform == ConsumerSynthWaveformTriangle)
-			{
-				value = triangle(angle);
-			}
-			else if (this->oscillator1Waveform == ConsumerSynthWaveformSaw)
-			{
-				value = saw(angle);
-			}
+			float osc1 = 0;
+			calculateSample(this, &osc1, amplitude, frequency, &this->_osc1Angle, this->oscillator1Waveform);
+			osc1 *= this->oscillator1Amplitude;
 			
-			convertLinearValue(&amplitude);
+			float osc2 = 0;
+			calculateSample(this, &osc2, amplitude, frequency, &this->_osc2Angle, this->oscillator2Waveform);
+			osc2 *= this->oscillator2Amplitude;
 			
-			l = value * amplitude;
-			r = l;
+			sample = osc1 + osc2;
 			
-			this->_currentFrequency = frequency;
 			this->_noteTime += .001; // FIXME
-			this->_angle = angle;
 		}
 		else
 		{
 			this->_noteTime = 0;
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
 			this->_filterEnvelopeState = ConsumerEnvelopeStateMax;
-			this->_angle = 0;
+			this->_osc1Angle = 0;
+			this->_osc2Angle = 0;
 		}
 		
-		clampStereo(&l, &r, 1.0);
+		clampChannel(&sample, 1.0);
 		
-		((float *)audio->mBuffers[0].mData)[i] = l;
-		((float *)audio->mBuffers[1].mData)[i] = r;
+		((float *)audio->mBuffers[0].mData)[i] = sample;
+		((float *)audio->mBuffers[1].mData)[i] = sample;
 	}
 	
 	return noErr;
@@ -352,6 +366,13 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 	if ((self = [super init]))
 	{
 		oscillator1Waveform = ConsumerSynthWaveformSine;
+		oscillator1Detune = 0;
+		oscillator1Amplitude = 1.0;
+		oscillator1Octave = 0;
+		oscillator2Waveform = ConsumerSynthWaveformSine;
+		oscillator2Detune = 0;
+		oscillator2Amplitude = 1.0;
+		oscillator2Octave = 0;
 		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
 		filterEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
 		glide = 0;

@@ -49,6 +49,8 @@
 			NSLog(@"Error creating delay: %@", delayError);
 		}
 		
+		AudioUnitSetParameter(_delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, 0, 0);
+		AudioUnitSetParameter(_delayFilter.audioUnit, kDelayParam_DelayTime, kAudioUnitScope_Global, 0, 0.3, 0);
 		
 		AudioComponentDescription reverbComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_Reverb2);
 		NSError *reverbError = nil;
@@ -58,6 +60,10 @@
 			NSLog(@"Error creating reverb: %@", reverbError);
 		}
 		
+		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, 0, 0);
+		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DecayTimeAt0Hz, kAudioUnitScope_Global, 0, 3.0, 0);
+		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DecayTimeAtNyquist, kAudioUnitScope_Global, 0, 3.0, 0);
+
 		[_audioController addFilter:_reverbFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
 		[_audioController addFilter:_delayFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
 		[_audioController addFilter:lowpassFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
@@ -81,10 +87,82 @@
 	self.synthChannel.currentNote = note;
 }
 
-- (void)setWaveform:(ConsumerSynthWaveform)waveform
+- (void)setOsc1Waveform:(ConsumerSynthWaveform)waveform
 {
-	_waveform = waveform;
+	_osc1Waveform = waveform;
 	self.synthChannel->oscillator1Waveform = waveform;
+}
+
+- (void)setOsc1Detune:(float)osc1Detune
+{
+	if (osc1Detune < -1.0 || osc1Detune > 1.0)
+	{
+		return;
+	}
+	
+	_osc1Detune = osc1Detune;
+	self.synthChannel->oscillator1Detune = osc1Detune;
+}
+
+- (void)setOsc1Amplitude:(float)osc1Amplitude
+{
+	if (osc1Amplitude < 0 || osc1Amplitude > 1.0)
+	{
+		return;
+	}
+	
+	_osc1Amplitude = osc1Amplitude;
+	self.synthChannel->oscillator1Amplitude = osc1Amplitude;
+}
+
+- (void)setOsc1Octave:(NSInteger)osc1Octave
+{
+	if (osc1Octave < -2 || osc1Octave > 2)
+	{
+		return;
+	}
+	
+	_osc1Octave = osc1Octave;
+	self.synthChannel->oscillator1Octave = osc1Octave;
+}
+
+- (void)setOsc2Waveform:(ConsumerSynthWaveform)waveform
+{
+	_osc2Waveform = waveform;
+	self.synthChannel->oscillator2Waveform = waveform;
+}
+
+- (void)setOsc2Detune:(float)osc2Detune
+{
+	if (osc2Detune < -1.0 || osc2Detune > 1.0)
+	{
+		return;
+	}
+	
+	_osc2Detune = osc2Detune;
+	self.synthChannel->oscillator2Detune = osc2Detune;
+}
+
+- (void)setOsc2Amplitude:(float)osc2Amplitude
+{
+	if (osc2Amplitude < 0 || osc2Amplitude > 1.0)
+	{
+		return;
+	}
+	
+	_osc2Amplitude = osc2Amplitude;
+	self.synthChannel->oscillator2Amplitude = osc2Amplitude;
+}
+
+- (void)setOsc2Octave:(NSInteger)osc2Octave
+{
+	if (osc2Octave < -2 || osc2Octave > 2)
+	{
+		return;
+	}
+	
+	_osc2Octave = osc2Octave;
+	self.synthChannel->oscillator2Octave = osc2Octave;
 }
 
 - (void)setAmplitudeAttack:(float)amplitudeAttack
@@ -219,43 +297,35 @@
 	self.synthChannel->filterPeak = filterPeak;
 }
 
-- (void)setReverb:(BOOL)reverb
+- (void)setReverbDryWetMix:(float)reverbDryWetMix
 {
-	_reverb = reverb;
+	if (reverbDryWetMix < 0 || reverbDryWetMix > 1.0)
+	{
+		return;
+	}
+	
+	_reverbDryWetMix = reverbDryWetMix;
 
-	if (reverb)
-	{
-		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, 40.0, 0);
-		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DecayTimeAt0Hz, kAudioUnitScope_Global, 0, 3.0, 0);
-		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DecayTimeAtNyquist, kAudioUnitScope_Global, 0, 3.0, 0);
-	}
-	else
-	{
-		AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, 0, 0);
-	}
+	AudioUnitSetParameter(self.reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, reverbDryWetMix * 100.0, 0);
 }
 
-- (void)setDelay:(BOOL)delay
+- (void)setDelayDryWetMix:(float)delayDryWetMix
 {
-	_delay = delay;
+	if (delayDryWetMix < 0 || delayDryWetMix > 1.0)
+	{
+		return;
+	}
 	
-	if (delay)
-	{
-		AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, 10.0, 0);
-		AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_DelayTime, kAudioUnitScope_Global, 0, 0.3, 0);
-	}
-	else
-	{
-		AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, 0, 0);
-	}
+	_delayDryWetMix = delayDryWetMix;
+	
+	AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, delayDryWetMix * 100.0, 0);
 }
 
 #pragma mark - Public
 
 - (void)configure
 {
-	self.reverb = NO;
-	self.delay = NO;
+	// TODO?
 }
 
 @end

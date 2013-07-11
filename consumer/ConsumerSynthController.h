@@ -12,7 +12,14 @@
 @interface ConsumerSynthController : NSObject
 
 @property (nonatomic, assign) NSInteger note;
-@property (nonatomic, assign) ConsumerSynthWaveform waveform;
+@property (nonatomic, assign) ConsumerSynthWaveform osc1Waveform;
+@property (nonatomic, assign) float osc1Detune;
+@property (nonatomic, assign) float osc1Amplitude;
+@property (nonatomic, assign) NSInteger osc1Octave;
+@property (nonatomic, assign) ConsumerSynthWaveform osc2Waveform;
+@property (nonatomic, assign) float osc2Detune;
+@property (nonatomic, assign) float osc2Amplitude;
+@property (nonatomic, assign) NSInteger osc2Octave;
 @property (nonatomic, assign) float amplitudeAttack;
 @property (nonatomic, assign) float amplitudeDecay;
 @property (nonatomic, assign) float amplitudeSustain;
@@ -25,8 +32,8 @@
 @property (nonatomic, assign) float filterCutoff;
 @property (nonatomic, assign) float filterResonance;
 @property (nonatomic, assign) float filterPeak;
-@property (nonatomic, assign) BOOL reverb;
-@property (nonatomic, assign) BOOL delay;
+@property (nonatomic, assign) float reverbDryWetMix;
+@property (nonatomic, assign) float delayDryWetMix;
 
 - (void)configure;
 
