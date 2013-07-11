@@ -419,11 +419,11 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 	{
 		oscillator1Waveform = ConsumerSynthWaveformSine;
 		oscillator1Detune = 0;
-		oscillator1Amplitude = 1.0;
+		oscillator1Amplitude = 0.5;
 		oscillator1Octave = 0;
 		oscillator2Waveform = ConsumerSynthWaveformSine;
 		oscillator2Detune = 0;
-		oscillator2Amplitude = 1.0;
+		oscillator2Amplitude = 0.5;
 		oscillator2Octave = 0;
 		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
 		filterEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
