@@ -34,6 +34,8 @@
 @property (nonatomic, assign) float filterPeak;
 @property (nonatomic, assign) float reverbDryWetMix;
 @property (nonatomic, assign) float delayDryWetMix;
+@property (nonatomic, assign) float lfoRate;
+@property (nonatomic, assign) float lfoDepth;
 
 - (void)configure;
 

@@ -395,6 +395,24 @@
 	}
 }
 
+- (IBAction)lfoRateSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.lfoRate = slider.value;
+	}
+}
+
+- (IBAction)lfoDepthSliderChanged:(id)sender
+{
+	if ([sender isKindOfClass:[UISlider class]])
+	{
+		UISlider *slider = (UISlider *)sender;
+		self.synthController.lfoDepth = slider.value;
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad

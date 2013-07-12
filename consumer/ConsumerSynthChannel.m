@@ -38,9 +38,11 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _osc2TargetFrequency;
 	float _osc1Angle;
 	float _osc2Angle;
+	float _lfoAngle;
 }
 
 const NSInteger ConsumerMaxStateLength = 44100;
+const float ConsumerLFOMaxFrequency = 10.0;
 
 float noteFrequency(float note)
 {
@@ -354,6 +356,15 @@ void applyOctave(NSInteger octave, float *frequency)
 	*frequency = freq;
 }
 
+void applyLFO(float rate, float depth, float *angle, float *frequency, float sampleRate)
+{
+	float angle1 = *angle + ((M_PI * 2.0) * rate / sampleRate);
+	angle1 = fmodf(angle1, M_PI * 2.0);
+	float value = sinf(angle1);
+	*frequency += value * (depth * 100.0);
+	*angle = angle1;
+}
+
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	if (this->_note > 0)
@@ -375,6 +386,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			float detunedOsc1 = osc1Freq;
 			applyDetune(this->oscillator1Detune, &detunedOsc1);
 			applyOctave(this->oscillator1Octave, &detunedOsc1);
+			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc1, this->_sampleRate);
 			calculateSample(this, &osc1, amplitude, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency);
 			osc1 *= this->oscillator1Amplitude;
 			
@@ -383,6 +395,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			float detunedOsc2 = osc2Freq;
 			applyDetune(this->oscillator2Detune, &detunedOsc2);
 			applyOctave(this->oscillator2Octave, &detunedOsc2);
+			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc2, this->_sampleRate);
 			calculateSample(this, &osc2, amplitude, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency);
 			osc2 *= this->oscillator2Amplitude;
 			
@@ -397,6 +410,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			this->_filterEnvelopeState = ConsumerEnvelopeStateMax;
 			this->_osc1Angle = 0;
 			this->_osc2Angle = 0;
+			this->_lfoAngle = 0;
 		}
 		
 		clampChannel(&sample, 1.0);
@@ -431,6 +445,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		filterCutoff = 1.0;
 		filterResonance = 0;
 		filterPeak = 1.0;
+		lfoRate = 0.5;
+		lfoDepth = 0.5;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;

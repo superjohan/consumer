@@ -321,6 +321,28 @@
 	AudioUnitSetParameter(self.delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, delayDryWetMix * 100.0, 0);
 }
 
+- (void)setLfoRate:(float)lfoRate
+{
+	if (lfoRate < 0 || lfoRate > 100.0)
+	{
+		return;
+	}
+	
+	_lfoRate = lfoRate;
+	self.synthChannel->lfoRate = lfoRate;
+}
+
+- (void)setLfoDepth:(float)lfoDepth
+{
+	if (lfoDepth < 0 || lfoDepth > 1.0)
+	{
+		return;
+	}
+	
+	_lfoDepth = lfoDepth;
+	self.synthChannel->lfoDepth = lfoDepth;
+}
+
 #pragma mark - Public
 
 - (void)configure
