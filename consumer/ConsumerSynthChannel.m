@@ -361,7 +361,9 @@ void applyLFO(float rate, float depth, float *angle, float *frequency, float sam
 	float angle1 = *angle + ((M_PI * 2.0) * rate / sampleRate);
 	angle1 = fmodf(angle1, M_PI * 2.0);
 	float value = sinf(angle1);
-	*frequency += value * (depth * 100.0);
+	float note = noteFromFrequency(*frequency);
+	float range = note - noteFrequency(note);
+	*frequency += value * ((depth * 0.1) * range); // FIXME: fix depth range instead of multiplying by 0.1
 	*angle = angle1;
 }
 
