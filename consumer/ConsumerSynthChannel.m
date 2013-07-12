@@ -173,17 +173,15 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		this->_filterEnvelopePosition = 0;
 	}
 	
-	float cutoff = 0;
-	float resonance = 0;
-	
+	float envelopeValue = 0;
+
 	if (this->_filterEnvelopeState == ConsumerEnvelopeStateAttack)
 	{
 		float attackLength = this->filterEnvelope.attack * ConsumerMaxStateLength;
 		
 		if (this->_filterEnvelopePosition < attackLength)
 		{
-			cutoff = (this->_filterEnvelopePosition / attackLength) * this->filterPeak;
-			resonance = (this->_filterEnvelopePosition / attackLength) * this->filterPeak;
+			envelopeValue = (this->_filterEnvelopePosition / attackLength) * this->filterPeak;
 			this->_filterEnvelopePosition += frames;
 		}
 		else
@@ -199,8 +197,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		
 		if (this->_filterEnvelopePosition < decayLength)
 		{
-			cutoff = this->filterPeak - ((this->_filterEnvelopePosition / decayLength) * (this->filterPeak - this->filterEnvelope.sustain));
-			resonance = this->filterPeak - ((this->_filterEnvelopePosition / decayLength) * (this->filterPeak - this->filterEnvelope.sustain));
+			envelopeValue = this->filterPeak - ((this->_filterEnvelopePosition / decayLength) * (this->filterPeak - this->filterEnvelope.sustain));
 			this->_filterEnvelopePosition += frames;
 		}
 		else
@@ -212,8 +209,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 	
 	if (this->_filterEnvelopeState == ConsumerEnvelopeStateSustain)
 	{
-		cutoff = this->filterEnvelope.sustain;
-		resonance = this->filterEnvelope.sustain;
+		envelopeValue = this->filterEnvelope.sustain;
 		
 		if (this->_currentNote == ConsumerNoteOff)
 		{
@@ -228,8 +224,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		
 		if (this->_filterEnvelopePosition < releaseLength)
 		{
-			cutoff = this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain);
-			resonance = this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain);
+			envelopeValue = this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain);
 			this->_filterEnvelopePosition += frames;
 		}
 		else
@@ -238,9 +233,13 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		}
 	}
 		
+	float cutoffRange = 1.0 - this->filterCutoff;
+	float cutoff = this->filterCutoff + (cutoffRange * envelopeValue);
 	convertLinearValue(&cutoff);
-	float finalCutoff = (float)(this->_sampleRate / 2) * (cutoff * this->filterCutoff);
-	float finalResonance = 40.0 * (resonance * this->filterResonance);
+	convertLinearValue(&cutoff);
+	float finalCutoff = (float)(this->_sampleRate / 2) * cutoff;
+	float resonance = this->filterResonance * envelopeValue;
+	float finalResonance = 40.0 * resonance;
 	applyFilter(this, finalCutoff, finalResonance);
 }
 
@@ -288,6 +287,7 @@ void applyFilter(ConsumerSynthChannel *this, float cutoff, float resonance)
 
 void convertLinearValue(float *value)
 {
+	// FIXME: should be logarithmic
 	float v = *value;
 	*value = v * v;
 }
