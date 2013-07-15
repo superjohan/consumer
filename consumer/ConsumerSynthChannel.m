@@ -447,8 +447,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		filterCutoff = 1.0;
 		filterResonance = 0;
 		filterPeak = 1.0;
-		lfoRate = 0.5;
-		lfoDepth = 0.5;
+		lfoRate = 0;
+		lfoDepth = 0;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;
