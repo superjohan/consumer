@@ -67,11 +67,11 @@ float square(float input, float width)
 	
 	if (input < ((M_PI * 2.0) * width))
 	{
-		return -1.0;
+		return 1.0;
 	}
 	else
 	{
-		return 1.0;
+		return -1.0;
 	}
 }
 
