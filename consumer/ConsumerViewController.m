@@ -78,7 +78,7 @@
 
 #pragma mark - Private
 
-- (void)_emailSettings:(UISwipeGestureRecognizer *)recognizer
+- (void)_emailSettings:(UIGestureRecognizer *)recognizer
 {
 	if ( ! [MFMailComposeViewController canSendMail])
 	{
@@ -441,8 +441,9 @@
 {
     [super viewDidLoad];
 	
-	UISwipeGestureRecognizer *swipeRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(_emailSettings:)];
-	[self.view addGestureRecognizer:swipeRecognizer];
+	UITapGestureRecognizer *recognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_emailSettings:)];
+	recognizer.numberOfTouchesRequired = 3;
+	[self.view addGestureRecognizer:recognizer];
 	
 	self.synthController = [[ConsumerSynthController alloc] init];
 	self.octave = 4;
