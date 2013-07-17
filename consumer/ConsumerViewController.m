@@ -9,6 +9,7 @@
 #import "ConsumerViewController.h"
 #import "ConsumerSynthController.h"
 #import "ConsumerSynthChannel.h"
+#import <MessageUI/MessageUI.h>
 
 @class ConsumerKeyboardView;
 
@@ -63,7 +64,7 @@
 
 @end
 
-@interface ConsumerViewController () <ConsumerKeyboardViewDelegate>
+@interface ConsumerViewController () <ConsumerKeyboardViewDelegate, MFMailComposeViewControllerDelegate>
 @property (nonatomic) ConsumerKeyboardView *keyboardView;
 @property (nonatomic, assign) NSInteger activeNote;
 @property (nonatomic) ConsumerSynthController *synthController;
@@ -76,6 +77,27 @@
 @implementation ConsumerViewController
 
 #pragma mark - Private
+
+- (void)_emailSettings:(UISwipeGestureRecognizer *)recognizer
+{
+	if ( ! [MFMailComposeViewController canSendMail])
+	{
+		return;
+	}
+	
+	NSData *settings = [self.synthController serializeParametersToJSON];
+	MFMailComposeViewController *mailController = [[MFMailComposeViewController alloc] init];
+	mailController.mailComposeDelegate = self;
+	[mailController setSubject:@"Consumer synth settings"];
+	[mailController setCcRecipients:@[@"johan@halin.me"]];
+	[mailController addAttachmentData:settings mimeType:@"application/json" fileName:@"consumer_synth_settings.json"];
+	[self presentViewController:mailController animated:YES completion:nil];
+}
+
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
+{
+	[self dismissViewControllerAnimated:YES completion:nil];
+}
 
 - (void)_createKeyboardLayout
 {
@@ -419,8 +441,10 @@
 {
     [super viewDidLoad];
 	
+	UISwipeGestureRecognizer *swipeRecognizer = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(_emailSettings:)];
+	[self.view addGestureRecognizer:swipeRecognizer];
+	
 	self.synthController = [[ConsumerSynthController alloc] init];
-	[self.synthController configure];
 	self.octave = 4;
 }
 

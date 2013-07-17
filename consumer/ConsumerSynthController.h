@@ -37,6 +37,6 @@
 @property (nonatomic, assign) float lfoRate;
 @property (nonatomic, assign) float lfoDepth;
 
-- (void)configure;
+- (NSData *)serializeParametersToJSON;
 
 @end

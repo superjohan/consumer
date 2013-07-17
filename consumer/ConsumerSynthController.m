@@ -19,6 +19,8 @@
 
 @implementation ConsumerSynthController
 
+#pragma mark - Public
+
 - (instancetype)init
 {
 	if ((self = [super init]))
@@ -74,9 +76,64 @@
 			NSLog(@"%@", error);
 			return nil;
 		}
+		
+		_amplitudeAttack = _synthChannel->amplitudeEnvelope.attack;
+		_amplitudeDecay = _synthChannel->amplitudeEnvelope.decay;
+		_amplitudeSustain = _synthChannel->amplitudeEnvelope.sustain;
+		_amplitudeRelease = _synthChannel->amplitudeEnvelope.release;
+		_filterAttack = _synthChannel->filterEnvelope.attack;
+		_filterDecay = _synthChannel->filterEnvelope.decay;
+		_filterSustain = _synthChannel->filterEnvelope.sustain;
+		_filterRelease = _synthChannel->filterEnvelope.release;
+		_osc1Waveform = _synthChannel->oscillator1Waveform;
+		_osc1Detune = _synthChannel->oscillator1Detune;
+		_osc1Amplitude = _synthChannel->oscillator1Amplitude;
+		_osc1Octave = _synthChannel->oscillator1Octave;
+		_osc2Waveform = _synthChannel->oscillator2Waveform;
+		_osc2Detune = _synthChannel->oscillator2Detune;
+		_osc2Amplitude = _synthChannel->oscillator2Amplitude;
+		_osc2Octave = _synthChannel->oscillator2Octave;
+		_glide = _synthChannel->glide;
+		_filterCutoff = _synthChannel->filterCutoff;
+		_filterResonance = _synthChannel->filterResonance;
+		_filterPeak = _synthChannel->filterPeak;
+		_lfoRate = _synthChannel->lfoRate;
+		_lfoDepth = _synthChannel->lfoDepth;
 	}
 	
 	return self;
+}
+
+- (NSData *)serializeParametersToJSON
+{
+	NSDictionary *dict = @{@"osc1Waveform": [NSNumber numberWithInteger:self.osc1Waveform],
+						   @"osc1Detune": [NSNumber numberWithFloat:self.osc1Detune],
+						   @"osc1Amplitude": [NSNumber numberWithFloat:self.osc1Amplitude],
+						   @"osc1Octave": [NSNumber numberWithInteger:self.osc1Octave],
+						   @"osc2Waveform": [NSNumber numberWithInteger:self.osc2Waveform],
+						   @"osc2Detune": [NSNumber numberWithFloat:self.osc2Detune],
+						   @"osc2Amplitude": [NSNumber numberWithFloat:self.osc2Amplitude],
+						   @"osc2Octave": [NSNumber numberWithInteger:self.osc2Octave],
+						   @"amplitudeAttack": [NSNumber numberWithFloat:self.amplitudeAttack],
+						   @"amplitudeDecay": [NSNumber numberWithFloat:self.amplitudeDecay],
+						   @"amplitudeSustain": [NSNumber numberWithFloat:self.amplitudeSustain],
+						   @"amplitudeRelease": [NSNumber numberWithFloat:self.amplitudeRelease],
+						   @"filterAttack": [NSNumber numberWithFloat:self.filterAttack],
+						   @"filterDecay": [NSNumber numberWithFloat:self.filterDecay],
+						   @"filterSustain": [NSNumber numberWithFloat:self.filterSustain],
+						   @"filterRelease": [NSNumber numberWithFloat:self.filterRelease],
+						   @"glide": [NSNumber numberWithFloat:self.glide],
+						   @"filterCutoff": [NSNumber numberWithFloat:self.filterCutoff],
+						   @"filterResonance": [NSNumber numberWithFloat:self.filterResonance],
+						   @"filterPeak": [NSNumber numberWithFloat:self.filterPeak],
+						   @"reverbDryWetMix": [NSNumber numberWithFloat:self.reverbDryWetMix],
+						   @"delayDryWetMix": [NSNumber numberWithFloat:self.delayDryWetMix],
+						   @"lfoRate": [NSNumber numberWithFloat:self.lfoRate],
+						   @"lfoDepth": [NSNumber numberWithFloat:self.lfoDepth],
+						   };
+	NSError *error = nil;
+	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
+	return jsonData;
 }
 
 #pragma mark - Properties
@@ -341,13 +398,6 @@
 	
 	_lfoDepth = lfoDepth;
 	self.synthChannel->lfoDepth = lfoDepth;
-}
-
-#pragma mark - Public
-
-- (void)configure
-{
-	// TODO?
 }
 
 @end
