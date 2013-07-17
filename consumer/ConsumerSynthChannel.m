@@ -39,6 +39,23 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _osc1Angle;
 	float _osc2Angle;
 	float _lfoAngle;
+	// filter params
+	float _lastCutoff;
+	float _a0;
+	float _a1;
+	float _a2;
+	float _x1;
+	float _x2;
+	float _b1;
+	float _b2;
+	float _y1;
+	float _y2;
+	float _y3;
+	float _y4;
+	float _oldx;
+	float _oldy1;
+	float _oldy2;
+	float _oldy3;
 }
 
 const NSInteger ConsumerMaxStateLength = 44100;
@@ -167,7 +184,7 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	return amplitude;
 }
 
-void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
+void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 {
 	if (floatsAreEqual(this->_noteTime, 0))
 	{
@@ -184,7 +201,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		if (this->_filterEnvelopePosition < attackLength)
 		{
 			envelopeValue = (this->_filterEnvelopePosition / attackLength) * this->filterPeak;
-			this->_filterEnvelopePosition += frames;
+			this->_filterEnvelopePosition++;
 		}
 		else
 		{
@@ -200,7 +217,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		if (this->_filterEnvelopePosition < decayLength)
 		{
 			envelopeValue = this->filterPeak - ((this->_filterEnvelopePosition / decayLength) * (this->filterPeak - this->filterEnvelope.sustain));
-			this->_filterEnvelopePosition += frames;
+			this->_filterEnvelopePosition++;
 		}
 		else
 		{
@@ -227,7 +244,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 		if (this->_filterEnvelopePosition < releaseLength)
 		{
 			envelopeValue = this->filterEnvelope.sustain - ((this->_filterEnvelopePosition / releaseLength) * this->filterEnvelope.sustain);
-			this->_filterEnvelopePosition += frames;
+			this->_filterEnvelopePosition++;
 		}
 		else
 		{
@@ -239,10 +256,74 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, UInt32 frames)
 	float cutoff = this->filterCutoff + (cutoffRange * envelopeValue);
 	convertLinearValue(&cutoff);
 	convertLinearValue(&cutoff);
-	float finalCutoff = (float)(this->_sampleRate / 2) * cutoff;
 	float resonance = this->filterResonance * envelopeValue;
-	float finalResonance = 40.0 * resonance;
-	applyFilter(this, finalCutoff, finalResonance);
+	applyFilter(this, cutoff, resonance, &*sample);
+}
+
+void applyLowpassFilter(ConsumerSynthChannel *this, float cutoff, float resonance, float *sample)
+{
+	float x = *sample;
+	cutoff *= 10000.0;
+	
+	if (fabs(cutoff - this->_lastCutoff) > 0.001)
+	{
+		float n = 1;
+		float f0 = cutoff;
+		float fs = this->_sampleRate;
+		float c = powf(powf(2, 1.0f / n) - 1, -0.25);
+		float g = 1;
+		float p = sqrtf(2);
+		float fp = c * (f0 / fs);
+		float w0 = tanf(M_PI * fp);
+		float k1 = p * w0;
+		float k2 = g * w0 * w0;
+		
+		this->_a0 = k2 / (1 + k1 + k2);
+		this->_a1 = 2 * this->_a0;
+		this->_a2 = this->_a0;
+		this->_b1 = 2 * this->_a0 * (1 / k2 - 1);
+		this->_b2 = 1 - (this->_a0 + this->_a1 + this->_a2 + this->_b1);
+		this->_lastCutoff = cutoff;
+	}
+	
+	float y = this->_a0 * x + this->_a1 * this->_x1 + this->_a2 * this->_x2 + this->_b1 * this->_y1 + this->_b2 * this->_y2;
+	this->_x1 = x;
+	this->_x2 = this->_x1;
+	this->_y2 = this->_y1;
+	this->_y1 = y;
+
+	*sample = y;
+}
+
+void applyResonantFilter(ConsumerSynthChannel *this, float cutoff, float resonance, float *sample)
+{
+	float x = *sample;
+	cutoff *= 10000.0;
+	
+	float f = 2.0f * cutoff / this->_sampleRate;
+	float k = 3.6f * f - 1.6f * f * f - 1;
+	float p = (k + 1.0f) * 0.5f;
+	float scale = powf(M_E, (1.0f - p) * 1.386249);
+	float r = resonance * scale;
+	
+	float sampleOut = x - r * this->_y4;
+	this->_y1 = sampleOut * p + this->_oldx * p - k * this->_y1;
+	this->_y2 = this->_y1 * p + this->_oldy1 * p - k * this->_y2;
+	this->_y3 = this->_y2 * p + this->_oldy2 * p - k * this->_y3;
+	this->_y4 = this->_y3 * p + this->_oldy3 * p - k * this->_y4;
+	this->_y4 = this->_y4 - powf(this->_y4, 3.0f) / 6.0f;
+	this->_oldx = sampleOut;
+	this->_oldy1 = this->_y1;
+	this->_oldy2 = this->_y2;
+	this->_oldy3 = this->_y3;
+	
+	*sample = sampleOut;
+}
+
+void applyFilter(ConsumerSynthChannel *this, float cutoff, float resonance, float *sample)
+{
+	applyLowpassFilter(this, cutoff, resonance, &*sample);
+	applyResonantFilter(this, cutoff, resonance, &*sample);
 }
 
 float applyFrequencyGlide(float glide, float startFrequency, float currentFrequency, float targetFrequency, NSInteger note)
@@ -279,12 +360,6 @@ float applyFrequencyGlide(float glide, float startFrequency, float currentFreque
 	}
 	
 	return frequency;
-}
-
-void applyFilter(ConsumerSynthChannel *this, float cutoff, float resonance)
-{
-	AudioUnitSetParameter(this->filterUnit, kLowPassParam_CutoffFrequency, kAudioUnitScope_Global, 0, cutoff, 0);
-	AudioUnitSetParameter(this->filterUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, resonance, 0);
 }
 
 void convertLinearValue(float *value)
@@ -369,12 +444,6 @@ void applyLFO(float rate, float depth, float *angle, float *frequency, float sam
 
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
-	if (this->_note > 0)
-	{
-		// TODO: move to main sample calculation loop when using own filter implementation
-		applyFilterEnvelope(this, frames);
-	}
-	
 	for (NSInteger i = 0; i < frames; i++)
 	{
 		float sample = 0;
@@ -402,6 +471,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			osc2 *= this->oscillator2Amplitude;
 			
 			sample = osc1 + osc2;
+			
+			applyFilterEnvelope(this, &sample);
 			
 			this->_noteTime += .001; // FIXME
 		}
