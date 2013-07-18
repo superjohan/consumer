@@ -355,7 +355,7 @@
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
 						<int key="IBUIContentHorizontalAlignment">0</int>
 						<int key="IBUIContentVerticalAlignment">0</int>
-						<float key="IBUIMinValue">-0.5</float>
+						<float key="IBUIMaxValue">0.10000000149011612</float>
 					</object>
 					<object class="IBUILabel" id="379240008">
 						<reference key="NSNextResponder" ref="774585933"/>
@@ -742,7 +742,7 @@
 						<string key="NSFrame">{{344, 152}, {118, 23}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="700915537"/>
+						<reference key="NSNextKeyView" ref="174178704"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
@@ -800,7 +800,7 @@
 						<string key="NSFrame">{{189, 180}, {193, 44}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="146566964"/>
+						<reference key="NSNextKeyView" ref="163574587"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
@@ -928,6 +928,7 @@
 						<string key="NSFrame">{{344, 295}, {118, 23}}</string>
 						<reference key="NSSuperview" ref="774585933"/>
 						<reference key="NSWindow"/>
+						<reference key="NSNextKeyView"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
 						<bool key="IBUIOpaque">NO</bool>
 						<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
@@ -1149,7 +1150,7 @@
 						<reference key="IBUIFont" ref="900797955"/>
 						<bool key="IBUIAdjustsFontSizeToFit">NO</bool>
 					</object>
-					<object class="IBUISwitch" id="146566964">
+					<object class="IBUISwitch" id="163574587">
 						<reference key="NSNextResponder" ref="774585933"/>
 						<int key="NSvFlags">292</int>
 						<string key="NSFrame">{{380, 196}, {94, 27}}</string>
@@ -1163,7 +1164,7 @@
 						<int key="IBUIContentHorizontalAlignment">0</int>
 						<int key="IBUIContentVerticalAlignment">0</int>
 					</object>
-					<object class="IBUILabel" id="700915537">
+					<object class="IBUILabel" id="174178704">
 						<reference key="NSNextResponder" ref="774585933"/>
 						<int key="NSvFlags">292</int>
 						<string key="NSFrame">{{395, 179}, {78, 12}}</string>
@@ -1493,7 +1494,7 @@
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchEventConnection" key="connection">
 						<string key="label">hardSyncToggled:</string>
-						<reference key="source" ref="146566964"/>
+						<reference key="source" ref="163574587"/>
 						<reference key="destination" ref="372490531"/>
 						<int key="IBEventType">13</int>
 					</object>
@@ -1578,8 +1579,8 @@
 							<reference ref="346748967"/>
 							<reference ref="407951010"/>
 							<reference ref="802596965"/>
-							<reference ref="146566964"/>
-							<reference ref="700915537"/>
+							<reference ref="163574587"/>
+							<reference ref="174178704"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -1860,12 +1861,12 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">135</int>
-						<reference key="object" ref="146566964"/>
+						<reference key="object" ref="163574587"/>
 						<reference key="parent" ref="774585933"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">136</int>
-						<reference key="object" ref="700915537"/>
+						<reference key="object" ref="174178704"/>
 						<reference key="parent" ref="774585933"/>
 					</object>
 				</array>
