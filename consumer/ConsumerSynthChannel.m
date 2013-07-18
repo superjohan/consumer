@@ -10,6 +10,8 @@
 #import "ConsumerHelperFunctions.h"
 
 #define PI2 6.28318530717958623200
+#define TR2 1.05946309436
+#define TR2I 0.94387431268
 
 typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 {
@@ -422,17 +424,11 @@ void applyDetune(float detune, float *frequency)
 	
 	if (detune < 0)
 	{
-		float currentNote = noteFromFrequency(f);
-		float min = noteFrequency(currentNote - 1.0);
-		float freq = ((min / f) * detune) * (min - f);
-		*frequency = f - freq;
+		*frequency = f * TR2I;
 	}
 	else if (detune > 0)
 	{
-		float currentNote = noteFromFrequency(f);
-		float max = noteFrequency(currentNote + 1.0);
-		float freq = ((max / f) * detune) * (max - f);
-		*frequency = f + freq;
+		*frequency = f * TR2;
 	}
 }
 
@@ -457,8 +453,7 @@ void applyLFO(float rate, float depth, float *angle, float *frequency, float sam
 	}
 	
 	float value = sinf(angle1);
-	float note = noteFromFrequency(*frequency);
-	float range = note - noteFrequency(note);
+	float range = *frequency * TR2I;
 	*frequency += value * ((depth * 0.1) * range); // FIXME: fix depth range instead of multiplying by 0.1
 	*angle = angle1;
 }
