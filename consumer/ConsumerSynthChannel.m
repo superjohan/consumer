@@ -63,6 +63,7 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _oldy3;
 }
 
+const NSInteger ConsumerMinStateLength = 100;
 const NSInteger ConsumerMaxStateLength = 44100;
 const float ConsumerLFOMaxFrequency = 10.0;
 
@@ -130,7 +131,11 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateAttack)
 	{
 		float attackLength = this->amplitudeEnvelope.attack * ConsumerMaxStateLength;
-
+		if (attackLength < ConsumerMinStateLength)
+		{
+			attackLength = ConsumerMinStateLength;
+		}
+		
 		if (this->_amplitudeEnvelopePosition < attackLength)
 		{
 			amplitude = this->_amplitudeEnvelopePosition / attackLength;
@@ -146,6 +151,10 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateDecay)
 	{
 		float decayLength = this->amplitudeEnvelope.decay * ConsumerMaxStateLength;
+		if (decayLength < ConsumerMinStateLength)
+		{
+			decayLength = ConsumerMinStateLength;
+		}
 
 		if (this->_amplitudeEnvelopePosition < decayLength)
 		{
@@ -172,6 +181,10 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateRelease)
 	{
 		float releaseLength = this->amplitudeEnvelope.release * ConsumerMaxStateLength;
+		if (releaseLength < ConsumerMinStateLength)
+		{
+			releaseLength = ConsumerMinStateLength;
+		}
 
 		if (this->_amplitudeEnvelopePosition < releaseLength)
 		{
@@ -202,7 +215,11 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 	if (this->_filterEnvelopeState == ConsumerEnvelopeStateAttack)
 	{
 		float attackLength = this->filterEnvelope.attack * ConsumerMaxStateLength;
-		
+		if (attackLength < ConsumerMinStateLength)
+		{
+			attackLength = ConsumerMinStateLength;
+		}
+
 		if (this->_filterEnvelopePosition < attackLength)
 		{
 			envelopeValue = (this->_filterEnvelopePosition / attackLength) * this->filterPeak;
@@ -218,7 +235,11 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 	if (this->_filterEnvelopeState == ConsumerEnvelopeStateDecay)
 	{
 		float decayLength = this->filterEnvelope.decay * ConsumerMaxStateLength;
-		
+		if (decayLength < ConsumerMinStateLength)
+		{
+			decayLength = ConsumerMinStateLength;
+		}
+
 		if (this->_filterEnvelopePosition < decayLength)
 		{
 			envelopeValue = this->filterPeak - ((this->_filterEnvelopePosition / decayLength) * (this->filterPeak - this->filterEnvelope.sustain));
@@ -245,6 +266,10 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 	if (this->_filterEnvelopeState == ConsumerEnvelopeStateRelease)
 	{
 		float releaseLength = this->filterEnvelope.release * ConsumerMaxStateLength;
+		if (releaseLength < ConsumerMinStateLength)
+		{
+			releaseLength = ConsumerMinStateLength;
+		}
 		
 		if (this->_filterEnvelopePosition < releaseLength)
 		{
