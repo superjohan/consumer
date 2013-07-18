@@ -33,7 +33,6 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	ConsumerEnvelopeState _amplitudeEnvelopeState;
 	ConsumerEnvelopeState _filterEnvelopeState;
 	float _sampleRate;
-	float _noteTime;
 	float _osc1StartFrequency;
 	float _osc1CurrentFrequency;
 	float _osc1TargetFrequency;
@@ -44,6 +43,9 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _osc2Angle;
 	float _lfoAngle;
 	BOOL _angleReset;
+	BOOL _noteChanged;
+	BOOL _amplitudeEnvelopeActive;
+	BOOL _filterEnvelopeActive;
 	// filter params
 	float _lastCutoff;
 	float _a0;
@@ -122,10 +124,11 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 {
 	float amplitude = 0;
 	
-	if (floatsAreEqual(this->_noteTime, 0))
+	if ( ! this->_amplitudeEnvelopeActive)
 	{
 		this->_amplitudeEnvelopeState = ConsumerEnvelopeStateAttack;
 		this->_amplitudeEnvelopePosition = 0;
+		this->_amplitudeEnvelopeActive = YES;
 	}
 
 	if (this->_amplitudeEnvelopeState == ConsumerEnvelopeStateAttack)
@@ -196,6 +199,7 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
 			this->_currentNote = 0;
 			this->_note = 0;
+			this->_amplitudeEnvelopeActive = NO;
 		}
 	}
 	
@@ -204,10 +208,10 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 
 void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 {
-	if (floatsAreEqual(this->_noteTime, 0))
+	if ( ! this->_filterEnvelopeActive)
 	{
 		this->_filterEnvelopeState = ConsumerEnvelopeStateAttack;
-		this->_filterEnvelopePosition = 0;
+		this->_filterEnvelopeActive = YES;
 	}
 	
 	float envelopeValue = 0;
@@ -279,6 +283,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 		else
 		{
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
+			this->_filterEnvelopeActive = NO;
 		}
 	}
 		
@@ -514,12 +519,11 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			sample = osc1 + osc2;
 			
 			applyFilterEnvelope(this, &sample);
-			
-			this->_noteTime += .001; // FIXME
 		}
 		else
 		{
-			this->_noteTime = 0;
+			this->_amplitudeEnvelopeActive = NO;
+			this->_filterEnvelopeActive = NO;
 			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
 			this->_filterEnvelopeState = ConsumerEnvelopeStateMax;
 			this->_osc1Angle = 0;
@@ -564,7 +568,6 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;
-		_noteTime = 0;
 		_amplitudeEnvelopePosition = 0;
 		_filterEnvelopePosition = 0;
 	}
@@ -578,7 +581,8 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 	{
 		if (_currentNote <= 0)
 		{
-			_noteTime = 0; // FIXME for glide?
+			_amplitudeEnvelopeActive = NO;
+			_filterEnvelopeActive = NO;
 		}
 		
 		_currentNote = currentNote;
