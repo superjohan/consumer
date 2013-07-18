@@ -9,6 +9,8 @@
 #import "ConsumerSynthChannel.h"
 #import "ConsumerHelperFunctions.h"
 
+#define PI2 6.28318530717958623200
+
 typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 {
 	ConsumerEnvelopeStateAttack,
@@ -83,7 +85,7 @@ float square(float input, float width)
 		width = 1.0;
 	}
 	
-	if (input < ((M_PI * 2.0) * width))
+	if (input < (PI2 * width))
 	{
 		return 1.0;
 	}
@@ -109,7 +111,7 @@ float triangle(float input)
 
 float saw(float input)
 {
-	float value = (input * 2.0) / (M_PI * 2.0);
+	float value = (input * 2.0) / PI2;
 	return value - 1.0;
 }
 
@@ -372,8 +374,11 @@ void convertLinearValue(float *value)
 
 void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float originalFrequency, float *angle, ConsumerSynthWaveform waveform, float *currentFrequency, BOOL hardSync)
 {
-	float angle1 = *angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
-	angle1 = fmodf(angle1, M_PI * 2.0);
+	float angle1 = *angle + (PI2 * frequency / this->_sampleRate);
+	if (angle1 > PI2)
+	{
+		angle1 = fmodf(angle1, PI2);
+	}
 	
 	if ( ! hardSync)
 	{
@@ -382,7 +387,7 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 	
 	if (hardSync && this->_angleReset)
 	{
-		angle1 = (M_PI * 2.0) * frequency / this->_sampleRate;
+		angle1 = PI2 * frequency / this->_sampleRate;
 	}
 	
 	float value = 0;
@@ -445,8 +450,12 @@ void applyOctave(NSInteger octave, float *frequency)
 
 void applyLFO(float rate, float depth, float *angle, float *frequency, float sampleRate)
 {
-	float angle1 = *angle + ((M_PI * 2.0) * rate / sampleRate);
-	angle1 = fmodf(angle1, M_PI * 2.0);
+	float angle1 = *angle + (PI2 * rate / sampleRate);
+	if (angle1 > PI2)
+	{
+		angle1 = fmodf(angle1, PI2);
+	}
+	
 	float value = sinf(angle1);
 	float note = noteFromFrequency(*frequency);
 	float range = note - noteFrequency(note);

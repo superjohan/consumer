@@ -470,7 +470,7 @@
 	self.keyboardView.backgroundColor = [UIColor colorWithWhite:0.9 alpha:1.0];
 	self.keyboardView.delegate = self;
 	[self.view addSubview:self.keyboardView];
-	
+
 	[self _createKeyboardLayout];
 }
 
