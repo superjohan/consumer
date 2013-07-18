@@ -39,6 +39,7 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _osc1Angle;
 	float _osc2Angle;
 	float _lfoAngle;
+	BOOL _angleReset;
 	// filter params
 	float _lastCutoff;
 	float _a0;
@@ -369,10 +370,21 @@ void convertLinearValue(float *value)
 	*value = v * v;
 }
 
-void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float originalFrequency, float *angle, ConsumerSynthWaveform waveform, float *currentFrequency)
+void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float originalFrequency, float *angle, ConsumerSynthWaveform waveform, float *currentFrequency, BOOL hardSync)
 {
 	float angle1 = *angle + ((M_PI * 2.0) * frequency / this->_sampleRate);
 	angle1 = fmodf(angle1, M_PI * 2.0);
+	
+	if ( ! hardSync)
+	{
+		this->_angleReset = (angle1 < *angle);
+	}
+	
+	if (hardSync && this->_angleReset)
+	{
+		angle1 = (M_PI * 2.0) * frequency / this->_sampleRate;
+	}
+	
 	float value = 0;
 	
 	if (waveform == ConsumerSynthWaveformSine)
@@ -458,7 +470,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			applyDetune(this->oscillator1Detune, &detunedOsc1);
 			applyOctave(this->oscillator1Octave, &detunedOsc1);
 			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc1, this->_sampleRate);
-			calculateSample(this, &osc1, amplitude, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency);
+			calculateSample(this, &osc1, amplitude, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency, NO);
 			osc1 *= this->oscillator1Amplitude;
 			
 			float osc2 = 0;
@@ -467,7 +479,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			applyDetune(this->oscillator2Detune, &detunedOsc2);
 			applyOctave(this->oscillator2Octave, &detunedOsc2);
 			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc2, this->_sampleRate);
-			calculateSample(this, &osc2, amplitude, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency);
+			calculateSample(this, &osc2, amplitude, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency, this->hardSync);
 			osc2 *= this->oscillator2Amplitude;
 			
 			sample = osc1 + osc2;

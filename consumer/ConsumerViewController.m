@@ -435,6 +435,15 @@
 	}
 }
 
+- (IBAction)hardSyncToggled:(id)sender
+{
+	if ([sender isKindOfClass:[UISwitch class]])
+	{
+		UISwitch *hardSyncSwitch = (UISwitch *)sender;
+		self.synthController.hardSync = hardSyncSwitch.on;
+	}
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad

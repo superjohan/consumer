@@ -99,6 +99,7 @@
 		_filterPeak = _synthChannel->filterPeak;
 		_lfoRate = _synthChannel->lfoRate;
 		_lfoDepth = _synthChannel->lfoDepth;
+		_hardSync = _synthChannel->hardSync;
 	}
 	
 	return self;
@@ -130,6 +131,7 @@
 						   @"delayDryWetMix": [NSNumber numberWithFloat:self.delayDryWetMix],
 						   @"lfoRate": [NSNumber numberWithFloat:self.lfoRate],
 						   @"lfoDepth": [NSNumber numberWithFloat:self.lfoDepth],
+						   @"hardSync": [NSNumber numberWithBool:self.hardSync]
 						   };
 	NSError *error = nil;
 	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
@@ -398,6 +400,12 @@
 	
 	_lfoDepth = lfoDepth;
 	self.synthChannel->lfoDepth = lfoDepth;
+}
+
+- (void)setHardSync:(BOOL)hardSync
+{
+	_hardSync = hardSync;
+	self.synthChannel->hardSync = hardSync;
 }
 
 @end

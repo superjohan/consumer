@@ -36,6 +36,7 @@
 @property (nonatomic, assign) float delayDryWetMix;
 @property (nonatomic, assign) float lfoRate;
 @property (nonatomic, assign) float lfoDepth;
+@property (nonatomic, assign) BOOL hardSync;
 
 - (NSData *)serializeParametersToJSON;
 
