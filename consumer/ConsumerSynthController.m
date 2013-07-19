@@ -29,20 +29,6 @@
 		_synthChannel = [[ConsumerSynthChannel alloc] initWithSampleRate:_audioController.audioDescription.mSampleRate];
 		[_audioController addChannels:[NSArray arrayWithObject:_synthChannel]];
 
-		AudioComponentDescription filterComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_LowPassFilter);
-		NSError *filterError = nil;
-		AEAudioUnitFilter *lowpassFilter = [[AEAudioUnitFilter alloc] initWithComponentDescription:filterComponent audioController:_audioController error:&filterError];
-		if (lowpassFilter == nil)
-		{
-			NSLog(@"Error creating filter: %@", filterError);
-			return nil;
-		}
-	
-		AudioUnitSetParameter(lowpassFilter.audioUnit, kLowPassParam_CutoffFrequency, kAudioUnitScope_Global, 0, _audioController.audioDescription.mSampleRate / 2, 0);
-		AudioUnitSetParameter(lowpassFilter.audioUnit, kLowPassParam_Resonance, kAudioUnitScope_Global, 0, 0.0, 0);
-		
-		_synthChannel->filterUnit = lowpassFilter.audioUnit;
-		
 		AudioComponentDescription delayComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_Delay);
 		NSError *delayError = nil;
 		_delayFilter = [[AEAudioUnitFilter alloc] initWithComponentDescription:delayComponent audioController:_audioController error:&delayError];
@@ -68,7 +54,6 @@
 
 		[_audioController addFilter:_reverbFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
 		[_audioController addFilter:_delayFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
-		[_audioController addFilter:lowpassFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
 
 		NSError *error = nil;
 		if ( ! [_audioController start:&error])
