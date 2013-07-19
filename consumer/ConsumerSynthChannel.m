@@ -30,6 +30,7 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	NSInteger _amplitudeEnvelopePosition;
 	NSInteger _filterEnvelopePosition;
 	NSInteger _note;
+	NSInteger _targetNote;
 	ConsumerEnvelopeState _amplitudeEnvelopeState;
 	ConsumerEnvelopeState _filterEnvelopeState;
 	float _sampleRate;
@@ -42,8 +43,9 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _osc1Angle;
 	float _osc2Angle;
 	float _lfoAngle;
+	float _noteChangeFadeoutTimer;
 	BOOL _angleReset;
-	BOOL _noteChanged;
+	BOOL _noteNeedsRestart;
 	BOOL _amplitudeEnvelopeActive;
 	BOOL _filterEnvelopeActive;
 	// filter params
@@ -502,6 +504,32 @@ void applyLFO(float rate, float depth, float *angle, float *frequency, float sam
 	*angle = angle1;
 }
 
+void resetFrequencies(ConsumerSynthChannel *this)
+{
+	this->_osc1StartFrequency = this->_osc1CurrentFrequency;
+	this->_osc1TargetFrequency = noteFrequency(this->_currentNote);
+	
+	this->_osc2StartFrequency = this->_osc2CurrentFrequency;
+	this->_osc2TargetFrequency = noteFrequency(this->_currentNote);
+}
+
+void applyFadeout(ConsumerSynthChannel *this, float *amplitude)
+{
+	this->_noteChangeFadeoutTimer += .005;
+	*amplitude *= (1.0 - this->_noteChangeFadeoutTimer);
+	
+	if (this->_noteChangeFadeoutTimer >= 1.0)
+	{
+		*amplitude = 0;
+		resetFrequencies(this);
+		this->_noteChangeFadeoutTimer = 0;
+		this->_note = this->_targetNote;
+		this->_amplitudeEnvelopeActive = NO;
+		this->_filterEnvelopeActive = NO;
+		this->_noteNeedsRestart = NO;
+	}
+}
+
 static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *audioController, const AudioTimeStamp *time, UInt32 frames, AudioBufferList *audio)
 {
 	for (NSInteger i = 0; i < frames; i++)
@@ -511,6 +539,10 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		if (this->_note > 0)
 		{
 			float amplitude = applyVolumeEnvelope(this);
+			if (this->_noteNeedsRestart || this->_note != this->_targetNote)
+			{
+				applyFadeout(this, &amplitude);
+			}
 			
 			float osc1 = 0;
 			float osc1Freq = applyFrequencyGlide(this->glide, this->_osc1StartFrequency, this->_osc1CurrentFrequency, this->_osc1TargetFrequency, this->_note);
@@ -543,6 +575,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			this->_osc1Angle = 0;
 			this->_osc2Angle = 0;
 			this->_lfoAngle = 0;
+			this->_noteChangeFadeoutTimer = 0;
 		}
 		
 		clampChannel(&sample, 1.0);
@@ -593,23 +626,23 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 {
 	@synchronized (self)
 	{
-		if (_currentNote <= 0)
-		{
-			_amplitudeEnvelopeActive = NO;
-			_filterEnvelopeActive = NO;
-		}
-		
+		NSInteger previousNote = _currentNote;
 		_currentNote = currentNote;
 
 		if (_currentNote != ConsumerNoteOff)
 		{
-			_osc1StartFrequency = _osc1CurrentFrequency;
-			_osc1TargetFrequency = noteFrequency(_currentNote);
-
-			_osc2StartFrequency = _osc2CurrentFrequency;
-			_osc2TargetFrequency = noteFrequency(_currentNote);
+			if (_targetNote == _note)
+			{
+				_noteNeedsRestart = YES;
+			}
 			
-			_note = _currentNote;
+			_targetNote = _currentNote;
+			
+			if (_note <= 0 || previousNote > 0)
+			{
+				resetFrequencies(self);
+				_note = _currentNote;
+			}
 		}
 	}
 }
