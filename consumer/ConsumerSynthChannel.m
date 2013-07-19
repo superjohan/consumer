@@ -631,12 +631,12 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 
 		if (_currentNote != ConsumerNoteOff)
 		{
+			_targetNote = _currentNote;
+			
 			if (_targetNote == _note)
 			{
 				_noteNeedsRestart = YES;
 			}
-			
-			_targetNote = _currentNote;
 			
 			if (_note <= 0 || previousNote > 0)
 			{
