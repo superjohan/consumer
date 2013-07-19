@@ -346,7 +346,7 @@ void applyResonantFilter(ConsumerSynthChannel *this, float cutoff, float resonan
 	this->_y2 = this->_y1 * p + this->_oldy1 * p - k * this->_y2;
 	this->_y3 = this->_y2 * p + this->_oldy2 * p - k * this->_y3;
 	this->_y4 = this->_y3 * p + this->_oldy3 * p - k * this->_y4;
-	this->_y4 = this->_y4 - powf(this->_y4, 3.0f) / 6.0f;
+	this->_y4 = this->_y4 - (this->_y4 * this->_y4 * this->_y4) * 0.1666666667;
 	this->_oldx = sampleOut;
 	this->_oldy1 = this->_y1;
 	this->_oldy2 = this->_y2;
@@ -469,8 +469,22 @@ void applyOctave(NSInteger octave, float *frequency)
 		return;
 	}
 	
-	float note = noteFromFrequency(*frequency);
-	float freq = noteFrequency(note + (octave * 12));
+	float freq = *frequency;
+	if (octave < 0)
+	{
+		for (NSInteger i = 0; i < (-octave * 12); i++)
+		{
+			freq *= TR2I;
+		}
+	}
+	else
+	{
+		for (NSInteger i = 0; i < (-octave * 12); i++)
+		{
+			freq *= TR2;
+		}
+	}
+	
 	*frequency = freq;
 }
 
