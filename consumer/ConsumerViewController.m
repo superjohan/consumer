@@ -184,7 +184,7 @@
 	{
 		self.synthController.note = note;
 	}
-	else if (self.activeNote != note)
+	else if (self.activeNote != (note + 3))
 	{
 		note += 3; // jeeeesus christ
 		self.activeNote = note;
