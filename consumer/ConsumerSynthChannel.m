@@ -284,7 +284,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 		}
 		else
 		{
-			this->_amplitudeEnvelopeState = ConsumerEnvelopeStateMax;
+			this->_filterEnvelopeState = ConsumerEnvelopeStateMax;
 			this->_filterEnvelopeActive = NO;
 		}
 	}
