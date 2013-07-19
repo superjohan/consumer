@@ -43,7 +43,6 @@ static const NSInteger ConsumerNoteOff = -1;
 	float oscillator2Amplitude; // range: 0 - 1.0
 	NSInteger oscillator2Octave; // range: -2 - 2
 	float glide; // range: 0 - 1.0
-	AudioUnit filterUnit;
 	float filterCutoff; // range: 0 - 1.0
 	float filterResonance; // range: -0.5 - 1.0
 	float filterPeak; // range 0 - 1.0
