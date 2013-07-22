@@ -452,15 +452,13 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 
 void applyDetune(float detune, float *frequency)
 {
-	float f = *frequency;
-	
 	if (detune < 0)
 	{
-		*frequency = f * TR2_I;
+		*frequency *= -detune * TR2_I;
 	}
 	else if (detune > 0)
 	{
-		*frequency = f * TR2;
+		*frequency *= detune * TR2;
 	}
 }
 
@@ -471,23 +469,20 @@ void applyOctave(NSInteger octave, float *frequency)
 		return;
 	}
 	
-	float freq = *frequency;
 	if (octave < 0)
 	{
 		for (NSInteger i = 0; i < (-octave * 12); i++)
 		{
-			freq *= TR2_I;
+			*frequency *= TR2_I;
 		}
 	}
-	else
+	else if (octave > 0)
 	{
 		for (NSInteger i = 0; i < (-octave * 12); i++)
 		{
-			freq *= TR2;
+			*frequency *= TR2;
 		}
 	}
-	
-	*frequency = freq;
 }
 
 void applyLFO(float rate, float depth, float *angle, float *frequency)
