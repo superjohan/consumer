@@ -9,12 +9,14 @@
 #import "ConsumerSynthChannel.h"
 #import "ConsumerHelperFunctions.h"
 
-#define PI2   6.28318530717 // pi * 2
-#define TR2   1.05946309436 // twelfth root of 2
-#define TR2_I 0.94387431268 // 1 / TR2
-#define SR_I  0.00002267573 // 1 / 44100
-#define PI_I  0.31830988618 // 1 / pi
-#define PI2_I 0.15915494309 // 1 / (pi * 2)
+#define EF    2.718281828459 // e
+#define PI    3.141592653589 // pi
+#define PI2   6.28318530717f // pi * 2
+#define TR2   1.05946309436f // twelfth root of 2
+#define TR2_I 0.94387431268f // 1 / TR2
+#define SR_I  0.00002267573f // 1 / 44100
+#define PI_I  0.31830988618f // 1 / pi
+#define PI2_I 0.15915494309f // 1 / (pi * 2)
 
 typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 {
@@ -72,62 +74,62 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 
 const NSInteger ConsumerMinStateLength = 100;
 const NSInteger ConsumerMaxStateLength = 44100;
-const float ConsumerLFOMaxFrequency = 10.0;
+const float ConsumerLFOMaxFrequency = 10.0f;
 
 float noteFrequency(float note)
 {
-	return powf(2.0, ((note - 49.0) / 12.0)) * 440.0;
+	return powf(2.0f, ((note - 49.0f) / 12.0f)) * 440.0f;
 }
 
 float noteFromFrequency(float frequency)
 {
-	return 12.0 * log2f(frequency / 440.0) + 49.0;
+	return 12.0f * log2f(frequency / 440.0f) + 49.0f;
 }
 
 float square(float input, float width)
 {
-	if (width < 0)
+	if (width < 0.0f)
 	{
-		width = 0;
+		width = 0.0f;
 	}
-	else if (width > 1.0)
+	else if (width > 1.0f)
 	{
-		width = 1.0;
+		width = 1.0f;
 	}
 	
 	if (input < (PI2 * width))
 	{
-		return 1.0;
+		return 1.0f;
 	}
 	else
 	{
-		return -1.0;
+		return -1.0f;
 	}
 }
 
 float triangle(float input)
 {
-	if (input < M_PI)
+	if (input < PI)
 	{
-		float value = (input * 2.0) * PI_I;
-		return value - 1.0;
+		float value = (input * 2.0f) * PI_I;
+		return value - 1.0f;
 	}
 	else
 	{
-		float value = ((input - M_PI) * 2.0) * PI_I;
-		return 1.0 - value;
+		float value = ((input - PI) * 2.0f) * PI_I;
+		return 1.0f - value;
 	}
 }
 
 float saw(float input)
 {
-	float value = (input * 2.0) * PI2_I;
-	return value - 1.0;
+	float value = (input * 2.0f) * PI2_I;
+	return value - 1.0f;
 }
 
 float applyVolumeEnvelope(ConsumerSynthChannel *this)
 {
-	float amplitude = 0;
+	float amplitude = 0.0f;
 	
 	if ( ! this->_amplitudeEnvelopeActive)
 	{
@@ -166,7 +168,7 @@ float applyVolumeEnvelope(ConsumerSynthChannel *this)
 
 		if (this->_amplitudeEnvelopePosition < decayLength)
 		{
-			amplitude = 1.0 - ((this->_amplitudeEnvelopePosition / decayLength) * (1.0 - this->amplitudeEnvelope.sustain));
+			amplitude = 1.0f - ((this->_amplitudeEnvelopePosition / decayLength) * (1.0f - this->amplitudeEnvelope.sustain));
 			this->_amplitudeEnvelopePosition++;
 		}
 		else
@@ -292,7 +294,7 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 		}
 	}
 		
-	float cutoffRange = 1.0 - this->filterCutoff;
+	float cutoffRange = 1.0f - this->filterCutoff;
 	float cutoff = this->filterCutoff + (cutoffRange * envelopeValue);
 	convertLinearValue(&cutoff);
 	convertLinearValue(&cutoff);
@@ -303,23 +305,23 @@ void applyFilterEnvelope(ConsumerSynthChannel *this, float *sample)
 void applyLowpassFilter(ConsumerSynthChannel *this, float cutoff, float resonance, float *sample)
 {
 	float x = *sample;
-	cutoff *= 10000.0;
+	cutoff *= 10000.0f;
 	
-	if (fabs(cutoff - this->_lastCutoff) > 0.001)
+	if (fabs(cutoff - this->_lastCutoff) > 0.001f)
 	{
 		float f0 = cutoff;
 		float fs = SR_I;
-		float p = 1.414213562;
+		float p = 1.414213562f;
 		float fp = f0 * fs;
-		float w0 = tanf(M_PI * fp);
+		float w0 = tanf(PI * fp);
 		float k1 = p * w0;
 		float k2 = w0 * w0;
 		
-		this->_a0 = k2 / (1 + k1 + k2);
-		this->_a1 = 2 * this->_a0;
+		this->_a0 = k2 / (1.0f + k1 + k2);
+		this->_a1 = 2.0f * this->_a0;
 		this->_a2 = this->_a0;
-		this->_b1 = 2 * this->_a0 * (1 / k2 - 1);
-		this->_b2 = 1 - (this->_a0 + this->_a1 + this->_a2 + this->_b1);
+		this->_b1 = 2.0f * this->_a0 * (1.0f / k2 - 1.0f);
+		this->_b2 = 1.0f - (this->_a0 + this->_a1 + this->_a2 + this->_b1);
 		this->_lastCutoff = cutoff;
 	}
 	
@@ -335,12 +337,12 @@ void applyLowpassFilter(ConsumerSynthChannel *this, float cutoff, float resonanc
 void applyResonantFilter(ConsumerSynthChannel *this, float cutoff, float resonance, float *sample)
 {
 	float x = *sample;
-	cutoff *= 10000.0;
+	cutoff *= 10000.0f;
 	
 	float f = 2.0f * cutoff * SR_I;
-	float k = 3.6f * f - 1.6f * f * f - 1;
+	float k = 3.6f * f - 1.6f * f * f - 1.0f;
 	float p = (k + 1.0f) * 0.5f;
-	float scale = powf(M_E, (1.0f - p) * 1.386249);
+	float scale = powf(EF, (1.0f - p) * 1.386249f);
 	float r = resonance * scale;
 	
 	float sampleOut = x - r * this->_y4;
@@ -348,7 +350,7 @@ void applyResonantFilter(ConsumerSynthChannel *this, float cutoff, float resonan
 	this->_y2 = this->_y1 * p + this->_oldy1 * p - k * this->_y2;
 	this->_y3 = this->_y2 * p + this->_oldy2 * p - k * this->_y3;
 	this->_y4 = this->_y3 * p + this->_oldy3 * p - k * this->_y4;
-	this->_y4 = this->_y4 - (this->_y4 * this->_y4 * this->_y4) * 0.1666666667;
+	this->_y4 = this->_y4 - (this->_y4 * this->_y4 * this->_y4) * 0.1666666667f;
 	this->_oldx = sampleOut;
 	this->_oldy1 = this->_y1;
 	this->_oldy2 = this->_y2;
@@ -370,11 +372,11 @@ float applyFrequencyGlide(float glide, float startFrequency, float currentFreque
 		return currentFrequency;
 	}
 	
-	float frequency = 0;
+	float frequency = 0.0f;
 	
 	if ( ! floatsAreEqual(currentFrequency, targetFrequency))
 	{
-		if (glide > 0)
+		if (glide > 0.0f)
 		{
 			float diff = targetFrequency - startFrequency;
 			float timeDiff = glide * ConsumerMaxStateLength;
@@ -424,7 +426,7 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 		angle1 = PI2 * frequency * SR_I;
 	}
 	
-	float value = 0;
+	float value = 0.0f;
 	
 	if (waveform == ConsumerSynthWaveformSine)
 	{
@@ -432,7 +434,7 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 	}
 	else if (waveform == ConsumerSynthWaveformSquare)
 	{
-		value = square(angle1, 0.5);
+		value = square(angle1, 0.5f);
 	}
 	else if (waveform == ConsumerSynthWaveformTriangle)
 	{
@@ -452,11 +454,11 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 
 void applyDetune(float detune, float *frequency)
 {
-	if (detune < 0)
+	if (detune < 0.0f)
 	{
 		*frequency *= -detune * TR2_I;
 	}
-	else if (detune > 0)
+	else if (detune > 0.0f)
 	{
 		*frequency *= detune * TR2;
 	}
@@ -495,7 +497,7 @@ void applyLFO(float rate, float depth, float *angle, float *frequency)
 	
 	float value = sinf(angle1);
 	float range = *frequency * TR2_I;
-	*frequency += value * ((depth * 0.1) * range); // FIXME: fix depth range instead of multiplying by 0.1
+	*frequency += value * ((depth * 0.1f) * range); // FIXME: fix depth range instead of multiplying by 0.1
 	*angle = angle1;
 }
 
@@ -510,10 +512,10 @@ void resetFrequencies(ConsumerSynthChannel *this)
 
 void applyFadeout(ConsumerSynthChannel *this, float *amplitude)
 {
-	this->_noteChangeFadeoutTimer += .005;
-	*amplitude *= (1.0 - this->_noteChangeFadeoutTimer);
+	this->_noteChangeFadeoutTimer += .005f;
+	*amplitude *= (1.0f - this->_noteChangeFadeoutTimer);
 	
-	if (this->_noteChangeFadeoutTimer >= 1.0)
+	if (this->_noteChangeFadeoutTimer >= 1.0f)
 	{
 		*amplitude = 0;
 		resetFrequencies(this);
@@ -577,7 +579,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			this->_noteChangeFadeoutTimer = 0;
 		}
 		
-		clampChannel(&sample, 1.0);
+		clampChannel(&sample, 1.0f);
 		
 		((float *)audio->mBuffers[0].mData)[i] = sample;
 		((float *)audio->mBuffers[1].mData)[i] = sample;
@@ -597,18 +599,18 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 	{
 		oscillator1Waveform = ConsumerSynthWaveformSine;
 		oscillator1Detune = 0;
-		oscillator1Amplitude = 0.5;
+		oscillator1Amplitude = 0.5f;
 		oscillator1Octave = 0;
 		oscillator2Waveform = ConsumerSynthWaveformSine;
 		oscillator2Detune = 0;
-		oscillator2Amplitude = 0.5;
+		oscillator2Amplitude = 0.5f;
 		oscillator2Octave = 0;
-		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
-		filterEnvelope = (ConsumerADSREnvelope){ .attack = 0.5, .decay = 0.5, .sustain = 0.5, .release = 0.5 };
+		amplitudeEnvelope = (ConsumerADSREnvelope){ .attack = 0.5f, .decay = 0.5f, .sustain = 0.5f, .release = 0.5f };
+		filterEnvelope = (ConsumerADSREnvelope){ .attack = 0.5f, .decay = 0.5f, .sustain = 0.5f, .release = 0.5f };
 		glide = 0;
-		filterCutoff = 1.0;
+		filterCutoff = 1.0f;
 		filterResonance = 0;
-		filterPeak = 1.0;
+		filterPeak = 1.0f;
 		lfoRate = 0;
 		lfoDepth = 0;
 		_sampleRate = sampleRate;
