@@ -9,9 +9,12 @@
 #import "ConsumerSynthChannel.h"
 #import "ConsumerHelperFunctions.h"
 
-#define PI2 6.28318530717958623200
-#define TR2 1.05946309436
-#define TR2I 0.94387431268
+#define PI2   6.28318530717 // pi * 2
+#define TR2   1.05946309436 // twelfth root of 2
+#define TR2_I 0.94387431268 // 1 / TR2
+#define SR_I  0.00002267573 // 1 / 44100
+#define PI_I  0.31830988618 // 1 / pi
+#define PI2_I 0.15915494309 // 1 / (pi * 2)
 
 typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 {
@@ -106,19 +109,19 @@ float triangle(float input)
 {
 	if (input < M_PI)
 	{
-		float value = (input * 2.0) / M_PI;
+		float value = (input * 2.0) * PI_I;
 		return value - 1.0;
 	}
 	else
 	{
-		float value = ((input - M_PI) * 2.0) / M_PI;
+		float value = ((input - M_PI) * 2.0) * PI_I;
 		return 1.0 - value;
 	}
 }
 
 float saw(float input)
 {
-	float value = (input * 2.0) / PI2;
+	float value = (input * 2.0) * PI2_I;
 	return value - 1.0;
 }
 
@@ -304,16 +307,13 @@ void applyLowpassFilter(ConsumerSynthChannel *this, float cutoff, float resonanc
 	
 	if (fabs(cutoff - this->_lastCutoff) > 0.001)
 	{
-		float n = 1;
 		float f0 = cutoff;
-		float fs = this->_sampleRate;
-		float c = powf(powf(2, 1.0f / n) - 1, -0.25);
-		float g = 1;
-		float p = sqrtf(2);
-		float fp = c * (f0 / fs);
+		float fs = SR_I;
+		float p = 1.414213562;
+		float fp = f0 * fs;
 		float w0 = tanf(M_PI * fp);
 		float k1 = p * w0;
-		float k2 = g * w0 * w0;
+		float k2 = w0 * w0;
 		
 		this->_a0 = k2 / (1 + k1 + k2);
 		this->_a1 = 2 * this->_a0;
@@ -337,7 +337,7 @@ void applyResonantFilter(ConsumerSynthChannel *this, float cutoff, float resonan
 	float x = *sample;
 	cutoff *= 10000.0;
 	
-	float f = 2.0f * cutoff / this->_sampleRate;
+	float f = 2.0f * cutoff * SR_I;
 	float k = 3.6f * f - 1.6f * f * f - 1;
 	float p = (k + 1.0f) * 0.5f;
 	float scale = powf(M_E, (1.0f - p) * 1.386249);
@@ -408,7 +408,7 @@ void convertLinearValue(float *value)
 
 void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float originalFrequency, float *angle, ConsumerSynthWaveform waveform, float *currentFrequency, BOOL hardSync)
 {
-	float angle1 = *angle + (PI2 * frequency / this->_sampleRate);
+	float angle1 = *angle + (PI2 * frequency * SR_I);
 	if (angle1 > PI2)
 	{
 		angle1 = fmodf(angle1, PI2);
@@ -421,7 +421,7 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 	
 	if (hardSync && this->_angleReset)
 	{
-		angle1 = PI2 * frequency / this->_sampleRate;
+		angle1 = PI2 * frequency * SR_I;
 	}
 	
 	float value = 0;
@@ -456,7 +456,7 @@ void applyDetune(float detune, float *frequency)
 	
 	if (detune < 0)
 	{
-		*frequency = f * TR2I;
+		*frequency = f * TR2_I;
 	}
 	else if (detune > 0)
 	{
@@ -476,7 +476,7 @@ void applyOctave(NSInteger octave, float *frequency)
 	{
 		for (NSInteger i = 0; i < (-octave * 12); i++)
 		{
-			freq *= TR2I;
+			freq *= TR2_I;
 		}
 	}
 	else
@@ -490,16 +490,16 @@ void applyOctave(NSInteger octave, float *frequency)
 	*frequency = freq;
 }
 
-void applyLFO(float rate, float depth, float *angle, float *frequency, float sampleRate)
+void applyLFO(float rate, float depth, float *angle, float *frequency)
 {
-	float angle1 = *angle + (PI2 * rate / sampleRate);
+	float angle1 = *angle + (PI2 * rate * SR_I);
 	if (angle1 > PI2)
 	{
 		angle1 = fmodf(angle1, PI2);
 	}
 	
 	float value = sinf(angle1);
-	float range = *frequency * TR2I;
+	float range = *frequency * TR2_I;
 	*frequency += value * ((depth * 0.1) * range); // FIXME: fix depth range instead of multiplying by 0.1
 	*angle = angle1;
 }
@@ -549,18 +549,22 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			float detunedOsc1 = osc1Freq;
 			applyDetune(this->oscillator1Detune, &detunedOsc1);
 			applyOctave(this->oscillator1Octave, &detunedOsc1);
-			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc1, this->_sampleRate);
+			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc1);
 			calculateSample(this, &osc1, amplitude, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency, NO);
-			osc1 *= this->oscillator1Amplitude;
-			
+			float osc1amp = this->oscillator1Amplitude;
+			convertLinearValue(&osc1amp);
+			osc1 *= osc1amp;;
+	
 			float osc2 = 0;
 			float osc2Freq = applyFrequencyGlide(this->glide, this->_osc2StartFrequency, this->_osc2CurrentFrequency, this->_osc2TargetFrequency, this->_note);
 			float detunedOsc2 = osc2Freq;
 			applyDetune(this->oscillator2Detune, &detunedOsc2);
 			applyOctave(this->oscillator2Octave, &detunedOsc2);
-			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc2, this->_sampleRate);
+			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc2);
 			calculateSample(this, &osc2, amplitude, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency, this->hardSync);
-			osc2 *= this->oscillator2Amplitude;
+			float osc2amp = this->oscillator2Amplitude;
+			convertLinearValue(&osc2amp);
+			osc2 *= osc2amp;;
 			
 			sample = osc1 + osc2;
 			
