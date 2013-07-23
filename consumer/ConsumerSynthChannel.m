@@ -9,14 +9,15 @@
 #import "ConsumerSynthChannel.h"
 #import "ConsumerHelperFunctions.h"
 
-#define EF    2.718281828459 // e
-#define PI    3.141592653589 // pi
-#define PI2   6.28318530717f // pi * 2
-#define TR2   1.05946309436f // twelfth root of 2
-#define TR2_I 0.94387431268f // 1 / TR2
-#define SR_I  0.00002267573f // 1 / 44100
-#define PI_I  0.31830988618f // 1 / pi
-#define PI2_I 0.15915494309f // 1 / (pi * 2)
+#define EF         2.718281828459 // e
+#define PI         3.141592653589 // pi
+#define PI2        6.28318530717f // pi * 2
+#define TR2        1.05946309436f // twelfth root of 2
+#define TR2_I      0.94387431268f // 1 / TR2
+#define SR_I       0.00002267573f // 1 / 44100
+#define PI_I       0.31830988618f // 1 / pi
+#define PI2_I      0.15915494309f // 1 / (pi * 2)
+#define TABLE_SIZE 16384
 
 typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 {
@@ -49,6 +50,7 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _osc2Angle;
 	float _lfoAngle;
 	float _noteChangeFadeoutTimer;
+	float _sinTable[TABLE_SIZE];
 	BOOL _angleReset;
 	BOOL _noteNeedsRestart;
 	BOOL _amplitudeEnvelopeActive;
@@ -430,7 +432,8 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 	
 	if (waveform == ConsumerSynthWaveformSine)
 	{
-		value = sinf(angle1);
+		NSInteger index = (int)(TABLE_SIZE * (angle1 * PI2_I));
+		value = this->_sinTable[index];
 	}
 	else if (waveform == ConsumerSynthWaveformSquare)
 	{
@@ -487,7 +490,7 @@ void applyOctave(NSInteger octave, float *frequency)
 	}
 }
 
-void applyLFO(float rate, float depth, float *angle, float *frequency)
+void applyLFO(float *sinTable, float rate, float depth, float *angle, float *frequency)
 {
 	float angle1 = *angle + (PI2 * rate * SR_I);
 	if (angle1 > PI2)
@@ -495,7 +498,8 @@ void applyLFO(float rate, float depth, float *angle, float *frequency)
 		angle1 = fmodf(angle1, PI2);
 	}
 	
-	float value = sinf(angle1);
+	NSInteger index = (int)(TABLE_SIZE * (angle1 * PI2_I));
+	float value = sinTable[index];
 	float range = *frequency * TR2_I;
 	*frequency += value * ((depth * 0.1f) * range); // FIXME: fix depth range instead of multiplying by 0.1
 	*angle = angle1;
@@ -546,7 +550,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			float detunedOsc1 = osc1Freq;
 			applyDetune(this->oscillator1Detune, &detunedOsc1);
 			applyOctave(this->oscillator1Octave, &detunedOsc1);
-			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc1);
+			applyLFO(this->_sinTable, this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc1);
 			calculateSample(this, &osc1, amplitude, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency, NO);
 			float osc1amp = this->oscillator1Amplitude;
 			convertLinearValue(&osc1amp);
@@ -557,7 +561,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			float detunedOsc2 = osc2Freq;
 			applyDetune(this->oscillator2Detune, &detunedOsc2);
 			applyOctave(this->oscillator2Octave, &detunedOsc2);
-			applyLFO(this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc2);
+			applyLFO(this->_sinTable, this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc2);
 			calculateSample(this, &osc2, amplitude, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency, this->hardSync);
 			float osc2amp = this->oscillator2Amplitude;
 			convertLinearValue(&osc2amp);
@@ -618,6 +622,12 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		_note = 0;
 		_amplitudeEnvelopePosition = 0;
 		_filterEnvelopePosition = 0;
+		
+		// generate wavetables
+		for (NSInteger i = 0; i < TABLE_SIZE; i++)
+		{
+			_sinTable[i] = sinf((i / (float)TABLE_SIZE) * (PI * 2.0f));
+		}
 	}
 	
 	return self;
