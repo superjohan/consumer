@@ -26,6 +26,7 @@
 	if ((self = [super init]))
 	{
 		_audioController = [[AEAudioController alloc] initWithAudioDescription:[AEAudioController nonInterleavedFloatStereoAudioDescription]];
+		_audioController.preferredBufferDuration = 0.025;
 		_synthChannel = [[ConsumerSynthChannel alloc] initWithSampleRate:_audioController.audioDescription.mSampleRate];
 		[_audioController addChannels:[NSArray arrayWithObject:_synthChannel]];
 
