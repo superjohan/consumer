@@ -40,19 +40,19 @@
 		AudioUnitSetParameter(_delayFilter.audioUnit, kDelayParam_WetDryMix, kAudioUnitScope_Global, 0, 0, 0);
 		AudioUnitSetParameter(_delayFilter.audioUnit, kDelayParam_DelayTime, kAudioUnitScope_Global, 0, 0.3, 0);
 		
-		AudioComponentDescription reverbComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_Reverb2);
-		NSError *reverbError = nil;
-		_reverbFilter = [[AEAudioUnitFilter alloc] initWithComponentDescription:reverbComponent audioController:_audioController error:&reverbError];
-		if (_reverbFilter == nil)
-		{
-			NSLog(@"Error creating reverb: %@", reverbError);
-		}
-		
-		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, 0, 0);
-		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DecayTimeAt0Hz, kAudioUnitScope_Global, 0, 3.0, 0);
-		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DecayTimeAtNyquist, kAudioUnitScope_Global, 0, 3.0, 0);
-
-		[_audioController addFilter:_reverbFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
+//		AudioComponentDescription reverbComponent = AEAudioComponentDescriptionMake(kAudioUnitManufacturer_Apple, kAudioUnitType_Effect, kAudioUnitSubType_Reverb2);
+//		NSError *reverbError = nil;
+//		_reverbFilter = [[AEAudioUnitFilter alloc] initWithComponentDescription:reverbComponent audioController:_audioController error:&reverbError];
+//		if (_reverbFilter == nil)
+//		{
+//			NSLog(@"Error creating reverb: %@", reverbError);
+//		}
+//		
+//		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DryWetMix, kAudioUnitScope_Global, 0, 0, 0);
+//		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DecayTimeAt0Hz, kAudioUnitScope_Global, 0, 3.0, 0);
+//		AudioUnitSetParameter(_reverbFilter.audioUnit, kReverb2Param_DecayTimeAtNyquist, kAudioUnitScope_Global, 0, 3.0, 0);
+//
+//		[_audioController addFilter:_reverbFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
 		[_audioController addFilter:_delayFilter toChannel:(id<AEAudioPlayable>)_synthChannel];
 
 		NSError *error = nil;
