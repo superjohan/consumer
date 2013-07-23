@@ -395,7 +395,7 @@ float applyFrequencyGlide(float glide, float startFrequency, float currentFreque
 	}
 	else
 	{
-		frequency = noteFrequency(note);
+		frequency = targetFrequency;
 	}
 	
 	return frequency;
