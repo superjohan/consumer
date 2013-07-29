@@ -51,10 +51,12 @@ typedef NS_ENUM(NSInteger, ConsumerEnvelopeState)
 	float _lfoAngle;
 	float _noteChangeFadeoutTimer;
 	float _sinTable[TABLE_SIZE];
+	float _lastSample;
 	BOOL _angleReset;
 	BOOL _noteNeedsRestart;
 	BOOL _amplitudeEnvelopeActive;
 	BOOL _filterEnvelopeActive;
+	BOOL _subOscFlipped;
 	// filter params
 	float _lastCutoff;
 	float _a0;
@@ -98,7 +100,7 @@ float square(float input, float width)
 	{
 		width = 1.0f;
 	}
-	
+		
 	if (input < (PI2 * width))
 	{
 		return 1.0f;
@@ -410,7 +412,7 @@ void convertLinearValue(float *value)
 	*value = v * v;
 }
 
-void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude, float frequency, float originalFrequency, float *angle, ConsumerSynthWaveform waveform, float *currentFrequency, BOOL hardSync)
+void calculateSample(ConsumerSynthChannel *this, float *sample, float frequency, float originalFrequency, float *angle, ConsumerSynthWaveform waveform, float *currentFrequency, BOOL hardSync)
 {
 	float angle1 = *angle + (PI2 * frequency * SR_I);
 	if (angle1 > PI2)
@@ -447,10 +449,8 @@ void calculateSample(ConsumerSynthChannel *this, float *sample, float amplitude,
 	{
 		value = saw(angle1);
 	}
-	
-	convertLinearValue(&amplitude);
-	
-	*sample = value * amplitude;
+		
+	*sample = value;
 	*currentFrequency = originalFrequency;
 	*angle = angle1;
 }
@@ -551,10 +551,10 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			applyDetune(this->oscillator1Detune, &detunedOsc1);
 			applyOctave(this->oscillator1Octave, &detunedOsc1);
 			applyLFO(this->_sinTable, this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc1);
-			calculateSample(this, &osc1, amplitude, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency, NO);
+			calculateSample(this, &osc1, detunedOsc1, osc1Freq, &this->_osc1Angle, this->oscillator1Waveform, &this->_osc1CurrentFrequency, NO);
 			float osc1amp = this->oscillator1Amplitude;
 			convertLinearValue(&osc1amp);
-			osc1 *= osc1amp;;
+			osc1 *= osc1amp;
 	
 			float osc2 = 0;
 			float osc2Freq = applyFrequencyGlide(this->glide, this->_osc2StartFrequency, this->_osc2CurrentFrequency, this->_osc2TargetFrequency, this->_note);
@@ -562,12 +562,35 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			applyDetune(this->oscillator2Detune, &detunedOsc2);
 			applyOctave(this->oscillator2Octave, &detunedOsc2);
 			applyLFO(this->_sinTable, this->lfoRate, this->lfoDepth, &this->_lfoAngle, &detunedOsc2);
-			calculateSample(this, &osc2, amplitude, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency, this->hardSync);
+			calculateSample(this, &osc2, detunedOsc2, osc2Freq, &this->_osc2Angle, this->oscillator2Waveform, &this->_osc2CurrentFrequency, this->hardSync);
 			float osc2amp = this->oscillator2Amplitude;
 			convertLinearValue(&osc2amp);
-			osc2 *= osc2amp;;
+			osc2 *= osc2amp;
 			
 			sample = osc1 + osc2;
+			float lastSample = this->_lastSample;
+			this->_lastSample = sample;
+			
+			if (this->subOsc)
+			{
+				if (lastSample < 0 && sample > 0)
+				{
+					this->_subOscFlipped = !this->_subOscFlipped;
+				}
+				
+				if (this->_subOscFlipped)
+				{
+					sample += this->subOscAmplitude;
+				}
+				else
+				{
+					sample -= this->subOscAmplitude;
+				}
+			}
+			
+			// apply amplitude envelope
+			convertLinearValue(&amplitude);
+			sample *= amplitude;
 			
 			applyFilterEnvelope(this, &sample);
 		}
@@ -617,6 +640,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		filterPeak = 1.0f;
 		lfoRate = 0;
 		lfoDepth = 0;
+		subOscAmplitude = 0.5;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;

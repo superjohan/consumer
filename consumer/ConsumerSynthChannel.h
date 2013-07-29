@@ -48,7 +48,9 @@ static const NSInteger ConsumerNoteOff = -1;
 	float filterPeak; // range 0 - 1.0
 	float lfoRate;
 	float lfoDepth;
+	float subOscAmplitude;
 	BOOL hardSync;
+	BOOL subOsc;
 }
 
 @property (nonatomic, assign) NSInteger currentNote;

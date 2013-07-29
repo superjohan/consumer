@@ -85,7 +85,9 @@
 		_filterPeak = _synthChannel->filterPeak;
 		_lfoRate = _synthChannel->lfoRate;
 		_lfoDepth = _synthChannel->lfoDepth;
+		_subOscAmplitude = _synthChannel->subOscAmplitude;
 		_hardSync = _synthChannel->hardSync;
+		_subOsc = _synthChannel->subOsc;
 	}
 	
 	return self;
@@ -117,7 +119,9 @@
 						   @"delayDryWetMix": [NSNumber numberWithFloat:self.delayDryWetMix],
 						   @"lfoRate": [NSNumber numberWithFloat:self.lfoRate],
 						   @"lfoDepth": [NSNumber numberWithFloat:self.lfoDepth],
-						   @"hardSync": [NSNumber numberWithBool:self.hardSync]
+						   @"subOscAmplitude": [NSNumber numberWithFloat:self.subOscAmplitude],
+						   @"hardSync": [NSNumber numberWithBool:self.hardSync],
+						   @"subOsc": [NSNumber numberWithBool:self.subOsc]
 						   };
 	NSError *error = nil;
 	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
@@ -388,10 +392,27 @@
 	self.synthChannel->lfoDepth = lfoDepth;
 }
 
+- (void)setSubOscAmplitude:(float)subOscAmplitude
+{
+	if (subOscAmplitude < 0 || subOscAmplitude > 1.0)
+	{
+		return;
+	}
+	
+	_subOscAmplitude = subOscAmplitude;
+	self.synthChannel->subOscAmplitude = subOscAmplitude;
+}
+
 - (void)setHardSync:(BOOL)hardSync
 {
 	_hardSync = hardSync;
 	self.synthChannel->hardSync = hardSync;
+}
+
+- (void)setSubOsc:(BOOL)subOsc
+{
+	_subOsc = subOsc;
+	self.synthChannel->subOsc = subOsc;
 }
 
 @end
