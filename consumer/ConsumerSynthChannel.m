@@ -573,7 +573,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			
 			if (this->subOsc)
 			{
-				if (lastSample < 0 && sample > 0)
+				if (lastSample < -.0000001 && sample >= -.0000001)
 				{
 					this->_subOscFlipped = !this->_subOscFlipped;
 				}
@@ -640,7 +640,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		filterPeak = 1.0f;
 		lfoRate = 0;
 		lfoDepth = 0;
-		subOscAmplitude = 0.5;
+		subOscAmplitude = 0.2;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;

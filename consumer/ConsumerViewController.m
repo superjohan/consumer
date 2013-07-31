@@ -449,7 +449,7 @@
 	if ([sender isKindOfClass:[UISwitch class]])
 	{
 		UISwitch *subOscSwitch = (UISwitch *)sender;
-//		self.synthController.hardSync = hardSyncSwitch.on;
+		self.synthController.subOsc = subOscSwitch.on;
 	}
 }
 
