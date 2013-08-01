@@ -567,13 +567,14 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			convertLinearValue(&osc2amp);
 			osc2 *= osc2amp;
 			
-			sample = osc1 + osc2;
 			float lastSample = this->_lastSample;
-			this->_lastSample = sample;
+			this->_lastSample = osc1;
+
+			sample = osc1 + osc2;
 			
 			if (this->subOsc)
 			{
-				if (lastSample < -.0000001 && sample >= -.0000001)
+				if (lastSample < -.0000001 && osc1 >= -.0000001)
 				{
 					this->_subOscFlipped = !this->_subOscFlipped;
 				}
