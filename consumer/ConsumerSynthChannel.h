@@ -49,6 +49,7 @@ static const NSInteger ConsumerNoteOff = -1;
 	float lfoRate;
 	float lfoDepth;
 	float subOscAmplitude;
+	float volume; // range: 0 - 1.0;
 	BOOL hardSync;
 	BOOL subOsc;
 }

@@ -37,6 +37,7 @@
 @property (nonatomic, assign) float lfoRate;
 @property (nonatomic, assign) float lfoDepth;
 @property (nonatomic, assign) float subOscAmplitude;
+@property (nonatomic, assign) float volume;
 @property (nonatomic, assign) BOOL hardSync;
 @property (nonatomic, assign) BOOL subOsc;
 

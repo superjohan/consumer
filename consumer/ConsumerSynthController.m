@@ -403,6 +403,17 @@
 	self.synthChannel->subOscAmplitude = subOscAmplitude;
 }
 
+- (void)setVolume:(float)volume
+{
+	if (volume < 0 || volume > 1.0)
+	{
+		return;
+	}
+	
+	_volume = volume;
+	self.synthChannel->volume = volume;
+}
+
 - (void)setHardSync:(BOOL)hardSync
 {
 	_hardSync = hardSync;

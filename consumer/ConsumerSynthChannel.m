@@ -607,6 +607,9 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		}
 		
 		clampChannel(&sample, 1.0f);
+		float volume = this->volume;
+		convertLinearValue(&volume);
+		sample *= volume;
 		
 		((float *)audio->mBuffers[0].mData)[i] = sample;
 		((float *)audio->mBuffers[1].mData)[i] = sample;
@@ -641,6 +644,7 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 		lfoRate = 0;
 		lfoDepth = 0;
 		subOscAmplitude = 0.2;
+		volume = 1.0f;
 		_sampleRate = sampleRate;
 		_currentNote = 0;
 		_note = 0;
