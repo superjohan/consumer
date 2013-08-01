@@ -483,7 +483,7 @@ void applyOctave(NSInteger octave, float *frequency)
 	}
 	else if (octave > 0)
 	{
-		for (NSInteger i = 0; i < (-octave * 12); i++)
+		for (NSInteger i = 0; i < (octave * 12); i++)
 		{
 			*frequency *= TR2;
 		}
