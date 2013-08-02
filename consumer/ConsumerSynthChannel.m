@@ -607,7 +607,9 @@ static OSStatus renderCallback(ConsumerSynthChannel *this, AEAudioController *au
 			this->_noteChangeFadeoutTimer = 0;
 		}
 		
+		// FIXME: Replace with vDSP_vclip?
 		clampChannel(&sample, 1.0f);
+		// FIXME: Replace with vDSP_vsq?
 		float volume = this->volume;
 		convertLinearValue(&volume);
 		sample *= volume;
