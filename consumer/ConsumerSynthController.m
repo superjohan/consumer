@@ -88,6 +88,7 @@
 		_subOscAmplitude = _synthChannel->subOscAmplitude;
 		_hardSync = _synthChannel->hardSync;
 		_subOsc = _synthChannel->subOsc;
+		_volume = _synthChannel->volume;
 	}
 	
 	return self;
@@ -121,7 +122,8 @@
 						   @"lfoDepth": [NSNumber numberWithFloat:self.lfoDepth],
 						   @"subOscAmplitude": [NSNumber numberWithFloat:self.subOscAmplitude],
 						   @"hardSync": [NSNumber numberWithBool:self.hardSync],
-						   @"subOsc": [NSNumber numberWithBool:self.subOsc]
+						   @"subOsc": [NSNumber numberWithBool:self.subOsc],
+						   @"volume": [NSNumber numberWithFloat:self.volume]
 						   };
 	NSError *error = nil;
 	NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
