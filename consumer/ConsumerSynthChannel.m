@@ -459,11 +459,13 @@ void applyDetune(float detune, float *frequency)
 {
 	if (detune < 0.0f)
 	{
-		*frequency *= -detune * TR2_I;
+		float offset = 1.0f - ((1.0f - TR2_I) * (-detune));
+		*frequency *= offset;
 	}
 	else if (detune > 0.0f)
 	{
-		*frequency *= detune * TR2;
+		float offset = 1.0f + ((TR2 - 1.0f) * detune);
+		*frequency *= offset;
 	}
 }
 
